@@ -73,6 +73,7 @@ public class ConfigurationWorld {
     public boolean healthRegen;
     public int MaxEntities;
     public boolean unlimitedFoodBar;
+    public boolean endCrystalExplode;
 
     public boolean restrictWorldXYZ;
     public int restrictWorldXminus;
@@ -276,6 +277,7 @@ public class ConfigurationWorld {
         this.configDefaults.put("Verden.Kaktus-kan-gro", false);
         this.configDefaults.put("Verden.Fysikk-pae-kaktus-og-sand", false);
         this.configDefaults.put("Verden.Regenere-snoe-og-is", false);
+        this.configDefaults.put("Verden.End-Crystal-Explode", false);
 
         this.configDefaults.put("Verden.Grense-pae-kartet", true);
         this.configDefaults.put("Verden.Grense-X-Minus", -4000);
@@ -453,6 +455,7 @@ public class ConfigurationWorld {
         this.CactusCanGrow = config.getBoolean("Verden.Kaktus-kan-gro");
         this.FysikkSandGravel = config.getBoolean("Verden.Fysikk-pae-kaktus-og-sand");
         this.regenIceSnow = config.getBoolean("Verden.Regenere-snoe-og-is");
+        this.endCrystalExplode = config.getBoolean("Verden.End-Crystal-Explode");
 
         this.restrictWorldXYZ = config.getBoolean("Verden.Grense-pae-kartet");
         this.restrictWorldXminus = config.getInt("Verden.Grense-X-Minus");

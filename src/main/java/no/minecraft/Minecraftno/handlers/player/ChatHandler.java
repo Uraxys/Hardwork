@@ -324,7 +324,7 @@ public class ChatHandler {
                 entry.getKey().sendMessage(ChatColor.GREEN + "[Kjøp/Salg] " + ChatColor.WHITE + player.getName() + ": " + nameHighlight(entry.getKey(), msg, null));
             }
         }
-        this.logHandler.log(this.userHandler.getUserId(player), 0, 0, 0, msg, MinecraftnoLog.TRADECHAT);
+        this.logHandler.log(this.userHandler.getUserId(player), 0, 0, null, msg, MinecraftnoLog.TRADECHAT);
     }
 
     public final void sendMainChatMessage(Player player, String msg) {
@@ -387,7 +387,7 @@ public class ChatHandler {
                 entry.getKey().sendMessage(player.getDisplayName() + ": " + ChatColor.WHITE + nameHighlight(entry.getKey(), msg, null));
             }
         }
-        this.logHandler.log(this.userHandler.getUserId(player), 0, 0, 0, msg, MinecraftnoLog.CHAT);
+        this.logHandler.log(this.userHandler.getUserId(player), 0, 0, null, msg, MinecraftnoLog.CHAT);
     }
 
     public final void sendPrivatMessage(Player player, Player target, String msg) {
@@ -401,7 +401,7 @@ public class ChatHandler {
         sendIRCPM(player, target, msg);
         target.sendMessage(ChatColor.AQUA + "[" + player.getName() + "] til [" + target.getName() + "] " + nameHighlight(target, msg, ChatColor.AQUA));
         player.sendMessage(ChatColor.AQUA + "[" + player.getName() + "] til [" + target.getName() + "] " + nameHighlight(player, msg, ChatColor.AQUA));
-        this.logHandler.log(this.userHandler.getUserId(player), this.userHandler.getUserId(target), 0, 0, msg, MinecraftnoLog.MELDING);
+        this.logHandler.log(this.userHandler.getUserId(player), this.userHandler.getUserId(target), 0, null, msg, MinecraftnoLog.MELDING);
         this.userHandler.setLastMsgSend(player, target.getName());
         this.userHandler.setLastMsgGet(target, player.getName());
     }

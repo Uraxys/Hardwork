@@ -1,6 +1,7 @@
 package no.minecraft.Minecraftno.handlers;
 
 import no.minecraft.Minecraftno.Minecraftno;
+import no.minecraft.Minecraftno.handlers.enums.LegacyMaterial;
 import no.minecraft.Minecraftno.handlers.player.UserHandler;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
@@ -141,7 +142,7 @@ public class BankHandler {
 
     public Cost getCost(ItemStack material) {
         for (PriceData item : this.buyableItems) {
-            Material itemMat = Minecraftno.convertMaterial(item.id, (byte) item.damage);
+            Material itemMat = LegacyMaterial.getLegacyMaterial(item.id, item.damage);
             if (itemMat == null) return null;
             if (itemMat == material.getType()) {
                 short materialCost = (short) (material.getAmount() / item.amountPerGold);
@@ -175,7 +176,7 @@ public class BankHandler {
     }
 
     public static String getItemName(int id, short damage) {
-        Material mat = Minecraftno.convertMaterial(id, (byte) damage);
+        Material mat = LegacyMaterial.getLegacyMaterial(id, damage);
         if (mat != null) return mat.name();
         return null;
         /*if (damage == 0) {

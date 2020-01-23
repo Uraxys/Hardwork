@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import no.minecraft.Minecraftno.Minecraftno;
+import no.minecraft.Minecraftno.handlers.enums.LegacyMaterial;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.inventory.ItemStack;
@@ -51,7 +52,7 @@ public class HultbergItemStack implements Serializable {
             return null;
         } else {
             // Support legacy
-            Material mat = Minecraftno.convertMaterial(this.itemId, this.data); // Support 1.8.8 & <
+            Material mat = LegacyMaterial.getLegacyMaterial(this.itemId, this.data); // Support 1.8.8 & <
             if (mat == null) return null;
             ItemStack r = new ItemStack(mat);
             r.setDurability(this.durability);

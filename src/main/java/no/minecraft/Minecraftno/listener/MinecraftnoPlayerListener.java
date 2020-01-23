@@ -628,7 +628,7 @@ public class MinecraftnoPlayerListener implements Listener {
                 }
             }
 
-            if (block.getState() instanceof Chest || block.getState() instanceof Furnace || block.getState() instanceof Hopper || block.getState() instanceof Dropper || block.getState() instanceof BrewingStand || block.getState() instanceof Beacon || block.getState() instanceof Dispenser) {
+            if (block.getState() instanceof Chest || block.getState() instanceof Furnace || block.getState() instanceof Hopper || block.getState() instanceof Dropper || block.getState() instanceof BrewingStand || block.getState() instanceof Beacon || block.getState() instanceof Dispenser || block.getType() == Material.FLOWER_POT || block.getType().name().startsWith("POTTED_")) {
                 if (this.userHandler.getAccess(player) == 0) {
                     player.sendMessage(ChatColor.RED + "Gjester kan ikke åpne kister eller furnace.");
                     event.setCancelled(true);
@@ -704,6 +704,8 @@ public class MinecraftnoPlayerListener implements Listener {
                             if (this.plugin.getUserHandler().getAccess(player) > 2) {
                                 return;
                             }
+                            if (block.getType().name().startsWith("POTTED_") || block.getType() == Material.FLOWER_POT) return; // Flower pots aren't that important.
+
                             player.sendMessage(ChatColor.RED + "Kisten eller furnace har ingen eier.");
                             event.setCancelled(true);
                             return;

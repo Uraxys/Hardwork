@@ -19,7 +19,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.world.StructureGrowEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionData;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -39,6 +42,37 @@ public class MinecraftnoEntityListener implements Listener {
         this.userHandler = instance.getUserHandler();
         this.blockInfo = instance.getBlockInfoHandler();
         this.blockHandler = instance.getBlockHandler();
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onProjectileLaunch(ProjectileLaunchEvent event) {
+        Entity entity = event.getEntity();
+
+
+        /* You can extinguish fire with water splash potions / lingering
+         * potions, but they don't fire an event when they do it, so for
+         * right now this is a hacky solution around it.
+         * It will replace all splash potions / lingering potions without
+         * any effect (Water potions), with a potion with custom color
+         * with no effect, stopping it from extinguishing fires.
+         *
+         * Could have a option in the world config later to turn it on and
+         * off, but I don't see the point of it now while there isn't an
+         * event for it, as this can be used to grief other players.
+         */
+        if (entity instanceof ThrownPotion) {
+            ThrownPotion potion = (ThrownPotion) entity;
+            ItemStack item = potion.getItem();
+            if (item.getType() == Material.LINGERING_POTION || item.getType() == Material.SPLASH_POTION) {
+                if (potion.getEffects().isEmpty()) {
+                    ItemStack newPotion = new ItemStack((item.getType() == Material.LINGERING_POTION ? Material.LINGERING_POTION : Material.SPLASH_POTION), 1);
+                    PotionMeta meta = (PotionMeta) newPotion.getItemMeta();
+                    meta.setColor(Color.fromRGB(9, 72, 135));
+                    newPotion.setItemMeta(meta);
+                    potion.setItem(newPotion);
+                }
+            }
+        }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -251,14 +285,12 @@ public class MinecraftnoEntityListener implements Listener {
         ConfigurationServer cfg = this.plugin.getGlobalConfiguration();
         ConfigurationWorld wcfg = cfg.get(world);
 
-        if (e instanceof LivingEntity) {
-            if ((e instanceof Creeper) && (!wcfg.CreeperBlockDamage)) {
-                event.setCancelled(true);
-            }
-        } else {
-            if (!wcfg.TNT) {
-                event.setCancelled(true);
-            }
+        if (e instanceof Creeper && !wcfg.CreeperBlockDamage) {
+            event.setCancelled(true);
+        } else if (e instanceof TNTPrimed && !wcfg.TNT) {
+            event.setCancelled(true);
+        } else if (e instanceof EnderCrystal && !wcfg.endCrystalExplode) {
+            event.setCancelled(true);
         }
     }
 

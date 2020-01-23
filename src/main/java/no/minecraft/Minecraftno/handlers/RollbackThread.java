@@ -1,6 +1,6 @@
 package no.minecraft.Minecraftno.handlers;
 
-import com.sk89q.worldedit.blocks.BaseBlock;
+import com.sk89q.worldedit.world.block.BaseBlock;
 import no.minecraft.Minecraftno.Minecraftno;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;

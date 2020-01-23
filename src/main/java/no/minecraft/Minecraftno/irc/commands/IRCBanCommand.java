@@ -42,7 +42,7 @@ public class IRCBanCommand implements IRCBotCommand {
                             if (this.userHandler.banUser(victim, build.toString(), user.getNick())) {
                                 this.userHandler.updatePlayer(victim, 5);
                                 victim.kickPlayer(build.toString());
-                                this.logHandler.log(this.userHandler.getUserId(user.getNick()), this.userHandler.getUserId(victim), 0, 0, build.toString(), MinecraftnoLog.BAN);
+                                this.logHandler.log(this.userHandler.getUserId(user.getNick()), this.userHandler.getUserId(victim), 0, null, build.toString(), MinecraftnoLog.BAN);
                                 this.plugin.getServer().broadcastMessage(victim.getDisplayName() +
                                     ChatColor.DARK_GREEN + " ble bannet: " +
                                     ChatColor.WHITE + build.toString());
@@ -61,7 +61,7 @@ public class IRCBanCommand implements IRCBotCommand {
                             if (!this.userHandler.isBanned(victimName)) {
                                 if (this.userHandler.banUser(victimName, build.toString(), user.getNick())) {
                                     this.userHandler.updatePlayer(victim, 5);
-                                    this.logHandler.log(this.userHandler.getUserId(user.getNick()), this.userHandler.getUserId(victim), 0, 0, build.toString(), MinecraftnoLog.BAN);
+                                    this.logHandler.log(this.userHandler.getUserId(user.getNick()), this.userHandler.getUserId(victim), 0, null, build.toString(), MinecraftnoLog.BAN);
                                     this.plugin.getServer().broadcastMessage(UserHandler.getPrefix(this.userHandler.getAccess(victim)) + victimName + ChatColor.DARK_GREEN + " ble bannet: " + ChatColor.WHITE + build.toString());
                                     this.plugin.getServer().broadcastMessage("Bannet av : " + this.userHandler.getIrcToGamePrefix(user) + user.getNick());
                                 } else {
