@@ -35,10 +35,10 @@ public class IRCUnbanCommand implements IRCBotCommand {
                         if (victimName != null) {
                             if (this.userHandler.isBanned(victimName)) {
                                 this.userHandler.unBanUser(victimName, false);
-                                this.logHandler.log(this.userHandler.getUserId(user.getNick()), this.userHandler.getUserId(victimName), 0, 0, null, MinecraftnoLog.UNBAN);
+                                this.logHandler.log(this.userHandler.getUserId(user.getNick()), this.userHandler.getUserId(victimName), 0, null, null, MinecraftnoLog.UNBAN);
                             } else if (this.userHandler.isWeekBanned(victimName)) {
                                 this.userHandler.unBanUser(victimName, true);
-                                this.logHandler.log(this.userHandler.getUserId(user.getNick()), this.userHandler.getUserId(victimName), 0, 0, null, MinecraftnoLog.UNBAN);
+                                this.logHandler.log(this.userHandler.getUserId(user.getNick()), this.userHandler.getUserId(victimName), 0, null, null, MinecraftnoLog.UNBAN);
                             } else {
                                 bot.sendMessage(sender, ("Brukeren er ikke bannet. (" + victimName + ")"));
                                 return;

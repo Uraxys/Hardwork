@@ -176,7 +176,7 @@ public class BankCommand extends MinecraftnoCommand {
                 inv.remove(Material.GOLD_BLOCK);
                 player.sendMessage(getDefaultChatColor() + "Satt inn: " + getVarChatColor() + playerInventoryGold + getDefaultChatColor() + " gull i banken.");
                 // Logging av bankinn
-                logHandler.log(this.userHandler.getUserId(player), 0, playerInventoryGold, 0, null, MinecraftnoLog.BANKINN);
+                logHandler.log(this.userHandler.getUserId(player), 0, playerInventoryGold, null, null, MinecraftnoLog.BANKINN);
                 int currentAmount = bankHandler.getAmount(player);
                 player.sendMessage(getDefaultChatColor() + "Du har nå: " + getVarChatColor() + currentAmount + getDefaultChatColor() + " gull i banken.");
             } else {
@@ -302,7 +302,7 @@ public class BankCommand extends MinecraftnoCommand {
         }
 
         // Log the transaction.
-        logHandler.log(this.userHandler.getUserId(player), 0, amount, 0, null, MinecraftnoLog.BANKUT);
+        logHandler.log(this.userHandler.getUserId(player), 0, amount, null, null, MinecraftnoLog.BANKUT);
 
         // Somewhere to store blocks and ingots we fail to place in the inventory.
         Map<Integer, ItemStack> failBlocks = new HashMap<>();
@@ -337,7 +337,7 @@ public class BankCommand extends MinecraftnoCommand {
         if (refund > 0) {
             // Yep :(
             this.bankHandler.insertAmount(player, refund);
-            logHandler.log(this.userHandler.getUserId(player), 0, refund, 0, null, MinecraftnoLog.BANKINN);
+            logHandler.log(this.userHandler.getUserId(player), 0, refund, null, null, MinecraftnoLog.BANKINN);
 
             this.plugin.getIrcBot().sendMessage("#hardwork.logg", "[Error][bankUtCommand] - " + player.getName() + " tok ut " + amount + " gull, men fikk ikke plass til alt i inventory. Antall gull til overs: " + refund);
         }
@@ -384,7 +384,7 @@ public class BankCommand extends MinecraftnoCommand {
             if (this.bankHandler.transfer(player, target, amount, userHandler)) {
                 player.sendMessage(getDefaultChatColor() + "Sendte " + getVarChatColor() + amount + getDefaultChatColor() + " gull til " + getVarChatColor() + target.getName() + getDefaultChatColor() + ". Du har nå " + getVarChatColor() + this.bankHandler.getAmount(player) + getDefaultChatColor() + " gull på kontoen.");
 
-                this.logHandler.log(this.userHandler.getUserId(player), this.userHandler.getUserId(target), amount, 0, reason, MinecraftnoLog.BANKTRANSFER);
+                this.logHandler.log(this.userHandler.getUserId(player), this.userHandler.getUserId(target), amount, null, reason, MinecraftnoLog.BANKTRANSFER);
 
                 if (!reason.isEmpty()) {
                     target.sendMessage(getDefaultChatColor() + "Spilleren " + getVarChatColor() + player.getName() + getDefaultChatColor() + " overførte " + getVarChatColor() + amount + getDefaultChatColor() + " gull til deg. Grunnen var: " + getVarChatColor() + reason + getDefaultChatColor() + ". Du har nå " + getVarChatColor() + this.bankHandler.getAmount(target) + getDefaultChatColor() + " gull på kontoen.");

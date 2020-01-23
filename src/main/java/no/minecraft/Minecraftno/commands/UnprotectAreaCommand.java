@@ -1,9 +1,12 @@
 package no.minecraft.Minecraftno.commands;
 
-import com.sk89q.worldedit.bukkit.selections.Selection;
+import com.sk89q.worldedit.IncompleteRegionException;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.regions.Region;
 import no.minecraft.Minecraftno.Minecraftno;
 import no.minecraft.Minecraftno.handlers.WEBridge;
 import no.minecraft.Minecraftno.handlers.player.UserHandler;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.entity.Player;
 
@@ -24,7 +27,13 @@ public class UnprotectAreaCommand extends MinecraftnoCommand {
 
     @Override
     public final boolean onPlayerCommand(Player player, Command command, String label, String[] args) {
-        Selection sel = this.weBridge.getWePlugin().getSelection(player);
+        Region sel;
+        try {
+            sel = this.weBridge.getWePlugin().getSession(player).getSelection(BukkitAdapter.adapt(player.getLocation().getWorld()));
+        } catch (IncompleteRegionException ignore) {
+            player.sendMessage(getErrorChatColor() + "Du har ikke valgt et område.");
+            return true;
+        }
         if (sel == null) {
             player.sendMessage(getErrorChatColor() + "Du har ikke valgt et område.");
             return true;
@@ -43,13 +52,13 @@ public class UnprotectAreaCommand extends MinecraftnoCommand {
                 return true;
             }
             if (args.length > 1) {
-                Set<Integer> ids = getId(args[1]);
+                Set<Material> ids = getId(args[1]);
                 if (ids == null) {
                     player.sendMessage(getErrorChatColor() + "'" + args[1] + "' er ikke et tall!");
                     return false;
                 }
-                for (Integer id : ids) {
-                    if (id == 0) {
+                for (Material mat : ids) {
+                    if (mat == Material.AIR) {
                         player.sendMessage(getErrorChatColor() + "Luft kan ikke bli beskyttet.");
                         return false;
                     }
@@ -60,23 +69,21 @@ public class UnprotectAreaCommand extends MinecraftnoCommand {
             this.weBridge.setArea(sel, this.userHandler.getUserId(player), 0, this.userHandler.getUserId(changeId), null);
             return true;
         } else {
-            player.sendMessage(getOkChatColor() + "Prøver å fjerne beskyttelse i område: " + getVarChatColor() + sel.getNativeMaximumPoint().toString() + "  " + sel.getNativeMinimumPoint().toString());
+            player.sendMessage(getOkChatColor() + "Prøver å fjerne beskyttelse i område: " + getVarChatColor() + sel.getMinimumPoint().toString() + "  " + sel.getMaximumPoint().toString());
 
             this.weBridge.setArea(sel, this.userHandler.getUserId(player), 0, 0, null);
             return true;
         }
     }
 
-    public Set<Integer> getId(String list) {
+    public Set<Material> getId(String list) {
         String[] items = list.split(",");
-        Set<Integer> getId = new HashSet<Integer>();
+        Set<Material> mats = new HashSet<>();
         for (String id : items) {
-            try {
-                getId.add(Integer.parseInt(id));
-            } catch (NumberFormatException ex) {
-                return null;
-            }
+            Material mat = Material.getMaterial(id.toUpperCase());
+            if (mat == null) continue;
+            mats.add(mat);
         }
-        return getId;
+        return mats;
     }
 }

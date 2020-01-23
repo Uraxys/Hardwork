@@ -6,6 +6,7 @@ import no.minecraft.Minecraftno.conf.ConfigurationWorld;
 import no.minecraft.Minecraftno.handlers.GroupHandler;
 import no.minecraft.Minecraftno.handlers.MySQLHandler;
 import no.minecraft.Minecraftno.handlers.Util;
+import no.minecraft.Minecraftno.handlers.enums.LegacyMaterial;
 import no.minecraft.Minecraftno.handlers.player.UserHandler;
 
 import org.bukkit.Location;
@@ -66,10 +67,20 @@ public class BlockInfoHandler {
 
                 while (rs.next()) {
                     Date date = new Date(rs.getLong("time") * 1000);
+                    String userName = this.userHandler.getNameFromId(rs.getInt("userid"));
+                    String material = rs.getString("material");
+                    String action = rs.getString("action");
+                    // ID to name isn't really needed anymore, as only old blocks use number id.
                     if (idToName) {
-                        row.add(dateFormat.format(date) + " -- " + this.userHandler.getNameFromId(rs.getInt("userid")) + " " + rs.getString("action") + " " + Material.getMaterial(rs.getShort("material")).toString());
+                        if (material.matches("\\d+")) { // Legacy block
+                            String matName = LegacyMaterial.getLegacyMaterialName(Integer.parseInt(material), 0);
+                            if (matName == null) row.add(dateFormat.format(date) + " -- " + userName + " " + action + " (LEGACY+)" + material); // Some old blocks doesn't even have a material, that's why it adds the (LEGACY+) tag.
+                            else row.add(dateFormat.format(date) + " -- " + userName + " " + action + " (LEGACY) " + matName.replaceAll("_", " ")); // 1.8 - 1.13 might change some blocks (Slabs / double slabs), that's why I added (LEGACY) tag, so people know it isn't a player that changed the block.
+                        } else {
+                            row.add(dateFormat.format(date) + " -- " + userName + " " + action + " " + material);
+                        }
                     } else {
-                        row.add(dateFormat.format(date) + " -- " + this.userHandler.getNameFromId(rs.getInt("userid")) + " " + rs.getString("action") + " " + rs.getShort("material"));
+                        row.add(dateFormat.format(date) + " -- " + userName + " " + action + " " + material);
                     }
                 }
                 if (row.isEmpty()) {

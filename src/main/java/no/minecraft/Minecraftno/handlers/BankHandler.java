@@ -141,7 +141,9 @@ public class BankHandler {
 
     public Cost getCost(ItemStack material) {
         for (PriceData item : this.buyableItems) {
-            if (item.id == material.getTypeId() && item.damage == material.getDurability()) {
+            Material itemMat = Minecraftno.convertMaterial(item.id, (byte) item.damage);
+            if (itemMat == null) return null;
+            if (itemMat == material.getType()) {
                 short materialCost = (short) (material.getAmount() / item.amountPerGold);
                 short leftOver = (short) (material.getAmount() % item.amountPerGold);
                 return new Cost(materialCost, leftOver);
@@ -173,7 +175,10 @@ public class BankHandler {
     }
 
     public static String getItemName(int id, short damage) {
-        if (damage == 0) {
+        Material mat = Minecraftno.convertMaterial(id, (byte) damage);
+        if (mat != null) return mat.name();
+        return null;
+        /*if (damage == 0) {
             return Material.getMaterial(id).toString().toLowerCase();
         } else {
             if (Material.WOOD.getId() == id) {
@@ -214,6 +219,6 @@ public class BankHandler {
                 return null;
             }
         }
-        return null;
+        return null;*/
     }
 }

@@ -28,7 +28,7 @@ public class BanCommand extends MinecraftnoCommand {
             Player victim = this.plugin.playerMatch(args[0]);
             if (victim != null) {
                 if (this.userHandler.banUser(victim, build.toString(), player)) {
-                    this.logHandler.log(this.userHandler.getUserId(player), this.userHandler.getUserId(victim), 0, 0, build.toString(), MinecraftnoLog.BAN);
+                    this.logHandler.log(this.userHandler.getUserId(player), this.userHandler.getUserId(victim), 0, null, build.toString(), MinecraftnoLog.BAN);
                     for (Player reciever : this.plugin.getServer().getOnlinePlayers()) {
                         if (this.userHandler.getAnnonseringer(reciever)) {
                             reciever.sendMessage(victim.getDisplayName() + getDefaultChatColor() + " ble bannet: " + getVarChatColor() + build.toString());
@@ -50,7 +50,7 @@ public class BanCommand extends MinecraftnoCommand {
                         player.sendMessage(getErrorChatColor() + "Brukeren " + getVarChatColor() + victimName + getErrorChatColor() + " har allerede ukesban, vil nå få permban");
                         this.userHandler.unBanUser(victimName, true);
                         if (this.userHandler.banUser(victimName, build.toString(), player)) {
-                            this.logHandler.log(this.userHandler.getUserId(player), this.userHandler.getUserId(victimName), 0, 0, build.toString(), MinecraftnoLog.BAN);
+                            this.logHandler.log(this.userHandler.getUserId(player), this.userHandler.getUserId(victimName), 0, null, build.toString(), MinecraftnoLog.BAN);
                             for (Player reciever : this.plugin.getServer().getOnlinePlayers()) {
                                 if (this.userHandler.getAnnonseringer(reciever)) {
                                     reciever.sendMessage(this.userHandler.getPlayerDisplayName(victimName) +
@@ -64,7 +64,7 @@ public class BanCommand extends MinecraftnoCommand {
                         }
                     } else {
                         if (this.userHandler.banUser(victimName, build.toString(), player)) {
-                            this.logHandler.log(this.userHandler.getUserId(player), this.userHandler.getUserId(victimName), 0, 0, build.toString(), MinecraftnoLog.BAN);
+                            this.logHandler.log(this.userHandler.getUserId(player), this.userHandler.getUserId(victimName), 0, null, build.toString(), MinecraftnoLog.BAN);
                             for (Player reciever : this.plugin.getServer().getOnlinePlayers()) {
                                 if (this.userHandler.getAnnonseringer(reciever)) {
                                     reciever.sendMessage(this.userHandler.getPlayerDisplayName(victimName) +

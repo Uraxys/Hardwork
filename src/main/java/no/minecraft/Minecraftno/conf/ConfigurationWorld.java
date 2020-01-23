@@ -107,6 +107,35 @@ public class ConfigurationWorld {
     public boolean witch;
     public boolean bats;
 	public boolean magmaCube;
+    // - Fish
+    public boolean pufferfish;
+    public boolean salmon;
+    public boolean tropical_fish;
+    public boolean turtle;
+    public boolean cod;
+    public boolean dolphin;
+    // - Hostile
+    public boolean zombie_villager;
+    public boolean phantom;
+    public boolean drowned;
+    public boolean pillager;
+    public boolean shulker;
+    public boolean shulker_bullet;
+    public boolean stray;
+    public boolean vex;
+    public boolean vindicator;
+    public boolean evoker;
+    public boolean endermite;
+    public boolean husk;
+    public boolean ravager;
+    // - Passive
+    public boolean parrot;
+    public boolean polar_bear;
+    public boolean trader_llama;
+    public boolean wandering_trader;
+    public boolean bee;
+    public boolean fox;
+    public boolean panda;
 
     public boolean supercreepers;
 
@@ -176,6 +205,21 @@ public class ConfigurationWorld {
         this.configDefaults.put("Dyr.Ulver", false);
         this.configDefaults.put("Dyr.Mushroom_Cow", false);
         this.configDefaults.put("Dyr.Snowman", false);
+        this.configDefaults.put("Dyr.Parrot", false);
+        this.configDefaults.put("Dyr.Polar_Bear", false);
+        this.configDefaults.put("Dyr.Trader_Llama", false);
+        this.configDefaults.put("Dyr.Wandering_Trader", false);
+        this.configDefaults.put("Dyr.Bee", false);
+        this.configDefaults.put("Dyr.Fox", false);
+        this.configDefaults.put("Dyr.Panda", false);
+
+        // Fish
+        this.configDefaults.put("Dyr.Pufferfish", false);
+        this.configDefaults.put("Dyr.Salmon", false);
+        this.configDefaults.put("Dyr.Tropical_Fish", false);
+        this.configDefaults.put("Dyr.Turtle", false);
+        this.configDefaults.put("Dyr.Cod", false);
+        this.configDefaults.put("Dyr.Dolphin", false);
 
         // Monsters
         this.configDefaults.put("Mobs.Creeper", false);
@@ -197,6 +241,19 @@ public class ConfigurationWorld {
         this.configDefaults.put("Mobs.Witch", false);
         this.configDefaults.put("Mobs.Bats", false);
         this.configDefaults.put("Mobs.MagmaCube", false);
+        this.configDefaults.put("Mobs.Zombie_Villager", false);
+        this.configDefaults.put("Mobs.Phantom", false);
+        this.configDefaults.put("Mobs.Drowned", false);
+        this.configDefaults.put("Mobs.Pillager", false);
+        this.configDefaults.put("Mobs.Shulker", false);
+        this.configDefaults.put("Mobs.Shulker_Bullet", false);
+        this.configDefaults.put("Mobs.Stray", false);
+        this.configDefaults.put("Mobs.Vex", false);
+        this.configDefaults.put("Mobs.Vindicator", false);
+        this.configDefaults.put("Mobs.Evoker", false);
+        this.configDefaults.put("Mobs.Endermite", false);
+        this.configDefaults.put("Mobs.Husk", false);
+        this.configDefaults.put("Mobs.Ravager", false);
 
         //Entities
         this.configDefaults.put("Entities.MaxEntities", 200);
@@ -325,6 +382,21 @@ public class ConfigurationWorld {
         this.wolf = config.getBoolean("Dyr.Ulver");
         this.mushroom_cow = config.getBoolean("Dyr.Mushroom_Cow");
         this.snowman = config.getBoolean("Dyr.Snowman");
+        this.parrot = config.getBoolean("Dyr.Parrot");
+        this.polar_bear = config.getBoolean("Dyr.Polar_Bear");
+        this.trader_llama = config.getBoolean("Dyr.Trader_Llama");
+        this.wandering_trader = config.getBoolean("Dyr.Wandering_Trader");
+        this.bee = config.getBoolean("Dyr.Bee");
+        this.fox = config.getBoolean("Dyr.Fox");
+        this.panda = config.getBoolean("Dyr.Panda");
+
+        // Fish
+        this.pufferfish = config.getBoolean("Dyr.Pufferfish");
+        this.salmon = config.getBoolean("Dyr.Salmon");
+        this.tropical_fish = config.getBoolean("Dyr.Tropical_Fish");
+        this.turtle = config.getBoolean("Dyr.Turtle");
+        this.cod = config.getBoolean("Dyr.Cod");
+        this.dolphin = config.getBoolean("Dyr.Dolphin");
 
         // Mobs
         this.creeper = config.getBoolean("Mobs.Creeper");
@@ -346,6 +418,19 @@ public class ConfigurationWorld {
         this.witch = config.getBoolean("Mobs.Witch");
         this.bats = config.getBoolean("Mobs.Bats");
         this.magmaCube = config.getBoolean("Mobs.MagmaCube");
+        this.zombie_villager = config.getBoolean("Mobs.Zombie_Villager");
+        this.phantom = config.getBoolean("Mobs.Phantom");
+        this.drowned = config.getBoolean("Mobs.Drowned");
+        this.pillager = config.getBoolean("Mobs.Pillager");
+        this.shulker = config.getBoolean("Mobs.Shulker");
+        this.shulker_bullet = config.getBoolean("Mobs.Shulker_Bullet");
+        this.stray = config.getBoolean("Mobs.Stray");
+        this.vex = config.getBoolean("Mobs.Vex");
+        this.vindicator = config.getBoolean("Mobs.Vindicator");
+        this.evoker = config.getBoolean("Mobs.Evoker");
+        this.endermite = config.getBoolean("Mobs.Endermite");
+        this.husk = config.getBoolean("Mobs.Husk");
+        this.ravager = config.getBoolean("Mobs.Ravager");
 
         //Entities
         this.MaxEntities = config.getInt("Entities.MaxEntities");

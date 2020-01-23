@@ -19,14 +19,11 @@ import no.minecraft.hardwork.Hardwork;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.SmoothBrick;
-import org.bukkit.material.Step;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jibble.pircbot.User;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.logging.Logger;
@@ -204,7 +201,7 @@ public class Minecraftno extends JavaPlugin {
         }
 
         this.getLogger().info(" - Cancelling scheduled tasks...");
-        getServer().getScheduler().cancelAllTasks();
+        getServer().getScheduler().cancelTasks(this);
 
         this.getLogger().info("Finished disabling Minecraftno plugin.");
     }
@@ -461,7 +458,13 @@ public class Minecraftno extends JavaPlugin {
     }
 
     public ItemStack matchItem(String name) {
-        int id = 0;
+        Material mat = Material.getMaterial(name);
+        if (mat == null) return null;
+        return new ItemStack(mat, 1);
+
+        // This is the only thing we need in 1.13+, as block IDs & item data has been removed.
+
+        /*int id = 0;
         int dmg = 0;
         String dataName = null;
 
@@ -494,10 +497,11 @@ public class Minecraftno extends JavaPlugin {
             }
         }
 
-        return new ItemStack(id, 1, (short) dmg);
+        return new ItemStack(id, 1, (short) dmg);*/
     }
 
-    public static int matchItemData(int id, String filter) {
+    // Not needed in 1.13+.
+    /*public static int matchItemData(int id, String filter) {
         // Missing some key code, need to be finished sometime in future.
         try {
             return Integer.parseInt(filter);
@@ -559,7 +563,7 @@ public class Minecraftno extends JavaPlugin {
         }
 
         return 0;
-    }
+    }*/
 
     public final static boolean canParse(String i) {
         try {

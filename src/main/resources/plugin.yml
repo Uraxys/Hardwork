@@ -8,6 +8,8 @@ website: ${project.organization.url}
 
 softdepend: [WorldEdit]
 
+api-version: 1.13
+
 commands:
   ban:
     description: Banner valgt bruker.

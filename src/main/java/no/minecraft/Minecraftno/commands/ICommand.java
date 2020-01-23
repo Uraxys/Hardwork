@@ -26,7 +26,7 @@ public class ICommand extends MinecraftnoCommand {
         if (args.length >= 1 && args.length < 4) {
             ItemStack itemStack = null;
             try {
-                itemStack = this.plugin.matchItem(args[0]);
+                itemStack = this.plugin.matchItem(args[0].toUpperCase());
             } catch (CommandException e) {
                 player.sendMessage(getErrorChatColor() + "Ugyldig item (" + getOkChatColor() + args[0] + getErrorChatColor() + ").");
                 return true;
@@ -68,10 +68,10 @@ public class ICommand extends MinecraftnoCommand {
                 if (targetPlayer != null) {
                     if (this.userHandler.getAccess(player) >= 3) {
                         targetPlayer.getInventory().addItem(itemStack);
-                        player.sendMessage(getDefaultChatColor() + "Gav " + getArgChatColor() + targetPlayer.getName() + " " + getVarChatColor() + amount + getDefaultChatColor() + " av item med id/navn: " + getVarChatColor() + itemStack.getTypeId() + getDefaultChatColor() + "/" + getVarChatColor() + Material.getMaterial(itemStack.getTypeId()).name());
-                        targetPlayer.sendMessage(getDefaultChatColor() + "Du fikk " + getVarChatColor() + amount + getDefaultChatColor() + " av item med id/navn: " + getVarChatColor() + itemStack.getTypeId() + getDefaultChatColor() + "/" + getVarChatColor() + Material.getMaterial(itemStack.getTypeId()).name() + getDefaultChatColor() + " fra spilleren " + getArgChatColor() + player.getName() + getDefaultChatColor() + ".");
+                        player.sendMessage(getDefaultChatColor() + "Gav " + getArgChatColor() + targetPlayer.getName() + " " + getVarChatColor() + amount + getDefaultChatColor() + " av item med navn: " + getVarChatColor() + itemStack.getType().name());
+                        targetPlayer.sendMessage(getDefaultChatColor() + "Du fikk " + getVarChatColor() + amount + getDefaultChatColor() + " av item med navn: " + getVarChatColor() + itemStack.getType().name() + getDefaultChatColor() + " fra spilleren " + getArgChatColor() + player.getName() + getDefaultChatColor() + ".");
 
-                        logHandler.log(this.userHandler.getUserId(player), this.userHandler.getUserId(targetPlayer), amount, itemStack.getTypeId(), null, MinecraftnoLog.GIVE);
+                        logHandler.log(this.userHandler.getUserId(player), this.userHandler.getUserId(targetPlayer), amount, itemStack.getType().name(), null, MinecraftnoLog.GIVE);
                     }
                 } else {
                     player.sendMessage(getErrorChatColor() + "Fant ikke spilleren: " + getOkChatColor() + args[2]);
@@ -84,9 +84,9 @@ public class ICommand extends MinecraftnoCommand {
                     amountString = "uendelig";
                 }
                 player.getInventory().addItem(itemStack);
-                player.sendMessage(getOkChatColor() + "Gav deg selv " + getErrorChatColor() + amountString + getOkChatColor() + " av item med id/navn: " + getErrorChatColor() + itemStack.getTypeId() + getOkChatColor() + "/" + getErrorChatColor() + Material.getMaterial(itemStack.getTypeId()).name());
+                player.sendMessage(getOkChatColor() + "Gav deg selv " + getErrorChatColor() + amountString + getOkChatColor() + " av item med navn: " + getErrorChatColor() + itemStack.getType().name());
 
-                logHandler.log(this.userHandler.getUserId(player), this.userHandler.getUserId(player), amount, itemStack.getTypeId(), null, MinecraftnoLog.GIVE);
+                logHandler.log(this.userHandler.getUserId(player), this.userHandler.getUserId(player), amount, itemStack.getType().name(), null, MinecraftnoLog.GIVE);
             }
         } else {
             player.sendMessage(getErrorChatColor() + "Du må skrive tall");

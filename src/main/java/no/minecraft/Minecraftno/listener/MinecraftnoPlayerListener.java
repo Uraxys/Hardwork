@@ -64,6 +64,7 @@ import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.util.BlockIterator;
@@ -145,11 +146,11 @@ public class MinecraftnoPlayerListener implements Listener {
             event.setCancelled(true);
             return;
         } else if (access <= 2) {
-            if (cfg.illegalItems.contains(event.getItemDrop().getItemStack().getTypeId())) {
+            if (cfg.illegalItems.contains(event.getItemDrop().getItemStack().getType())) {
                 player.sendMessage(Minecraftno.notAllowedItemMessage());
                 event.getItemDrop().remove();
                 event.setCancelled(true);
-                this.plugin.getLogHandler().log(this.userHandler.getUserId(player), 0, 0, event.getItemDrop().getItemStack().getTypeId(), player.getLocation().toString(), MinecraftnoLog.ILLEGAL);
+                this.plugin.getLogHandler().log(this.userHandler.getUserId(player), 0, 0, event.getItemDrop().getItemStack().getType().name(), player.getLocation().toString(), MinecraftnoLog.ILLEGAL);
             }
         }
     }
@@ -165,11 +166,11 @@ public class MinecraftnoPlayerListener implements Listener {
         } else if (this.userHandler.getInvisible(player)) {
             event.setCancelled(true);
             return;
-        } else if (cfg.illegalItems.contains(Integer.valueOf(event.getItem().getItemStack().getTypeId()))) {
+        } else if (cfg.illegalItems.contains(event.getItem().getItemStack().getType())) {
             if (access <= 2) {
                 player.sendMessage(Minecraftno.notAllowedItemMessage());
                 event.getItem().remove();
-                this.plugin.getLogHandler().log(this.userHandler.getUserId(player), 0, 0, event.getItem().getItemStack().getTypeId(), player.getLocation().toString(), MinecraftnoLog.ILLEGAL);
+                this.plugin.getLogHandler().log(this.userHandler.getUserId(player), 0, 0, event.getItem().getItemStack().getType().name(), player.getLocation().toString(), MinecraftnoLog.ILLEGAL);
                 event.setCancelled(true);
                 return;
             }
@@ -196,12 +197,12 @@ public class MinecraftnoPlayerListener implements Listener {
             if (player.getItemInHand().getType() == Material.STICK) {
                 if (this.userHandler.getAccess(player) > 2 && wcfg.adminStick) {
                     event.setCancelled(true);
-                    this.blockHandler.setBlocklog(this.userHandler.getUserId(player), e.getLocation(), (e.getType() == EntityType.PAINTING ? Material.PAINTING.getId() : Material.ITEM_FRAME.getId()), BlockLogReason.ADMINSTICKED);
+                    this.blockHandler.setBlocklog(this.userHandler.getUserId(player), e.getLocation(), (e.getType() == EntityType.PAINTING ? Material.PAINTING.name() : Material.ITEM_FRAME.name()), BlockLogReason.ADMINSTICKED);
                     this.blockHandler.deleteBlockProtection(e.getLocation());
                     e.remove();
                     return;
                 }
-            } else if (player.getItemInHand().getType() == Material.WATCH) {
+            } else if (player.getItemInHand().getType() == Material.CLOCK && event.getHand() == EquipmentSlot.HAND) { // Check if we use main hand, if we don't then it will run twice, one for each hand.
                 if (this.userHandler.getAccess(player) >= 2 && !player.isSneaking()) {
                     ArrayList<String> blockLog = this.blockinfoHandler.getBlockLog(e.getLocation(), true);
                     if (blockLog != null) {
@@ -244,7 +245,7 @@ public class MinecraftnoPlayerListener implements Listener {
                 owner = h.getOwner().getName();
             }
 
-        	if (player.getItemInHand().getType() == Material.WATCH) {
+        	if (player.getItemInHand().getType() == Material.CLOCK && event.getHand() == EquipmentSlot.HAND) { // Check if we use main hand, if we don't then it will run twice, one for each hand.
                 player.sendMessage("Eier av hesten: " + ChatColor.BLUE + owner);
         		event.setCancelled(true);
                 return;
@@ -321,18 +322,24 @@ public class MinecraftnoPlayerListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL)
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        ItemStack itemInHand = player.getItemInHand();
+        // 1.9 has two hands.
+        // Main hand as default. Should maybe check if the action is physical or not, as right now, if you hold a fire charge / tnt
+        // then it just cancels the event, even if it isn't an right click / left click event.
+        ItemStack itemInHand = player.getInventory().getItemInMainHand();
+        if (event.getHand() != null && event.getHand() == EquipmentSlot.HAND) itemInHand = player.getInventory().getItemInMainHand();
+        else if (event.getHand() == EquipmentSlot.OFF_HAND) player.getInventory().getItemInOffHand();
+
         Block block = event.getClickedBlock();
         ConfigurationServer cfg = this.plugin.getGlobalConfiguration();
         ConfigurationWorld wcfg = cfg.get(player.getWorld());
 
-        if (itemInHand.getType() == Material.FIREBALL || itemInHand.getType() == Material.TNT) {
+        if (itemInHand.getType() == Material.FIRE_CHARGE || itemInHand.getType() == Material.TNT) {
             // Mideltidlig.
             event.setCancelled(true);
             return;
         }
 
-        if (!player.isSneaking() && event.getAction() != Action.PHYSICAL && wcfg.allowUseCompass) {
+        if (!player.isSneaking() && event.getAction() != Action.PHYSICAL && wcfg.allowUseCompass && event.getHand() == EquipmentSlot.HAND) { // Check if we use main hand, if we don't then it will run twice, one for each hand.
             if (itemInHand.getType() == Material.COMPASS) {
                 useCompass(player);
                 event.setCancelled(true);
@@ -341,7 +348,7 @@ public class MinecraftnoPlayerListener implements Listener {
         }
 
         if (!wcfg.itemDurability) {
-            if (cfg.noDamageTools.contains(itemInHand.getTypeId())) {
+            if (cfg.noDamageTools.contains(itemInHand.getType())) {
                 itemInHand.setDurability((short) -200);
             }
         }
@@ -353,7 +360,7 @@ public class MinecraftnoPlayerListener implements Listener {
                 String owner = this.blockinfoHandler.getOwner(block);
                 if (owner != null) {
                     player.sendMessage(ChatColor.RED + owner + " eier blokken under så derfor er flammen beskyttet.");
-                    player.sendBlockChange(fire.getLocation(), fire.getType(), fire.getData());
+                    player.sendBlockChange(fire.getLocation(), fire.getType().createBlockData());
                     event.setUseInteractedBlock(Result.DENY);
                     event.setCancelled(true);
                     return;
@@ -365,7 +372,7 @@ public class MinecraftnoPlayerListener implements Listener {
 
         if (block != null && event.getAction() == Action.PHYSICAL) {
             Material mat = block.getType();
-            if ((mat != null) && (mat == Material.STONE_PLATE || mat == Material.STONE_BUTTON || mat == Material.WOOD_PLATE || mat == Material.WOOD_BUTTON)) {
+            if ((mat != null) && (mat == Material.STONE_PRESSURE_PLATE || mat == Material.STONE_BUTTON || mat == Material.OAK_PRESSURE_PLATE || mat == Material.OAK_BUTTON)) {
                 BlockFace[] bf = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.WEST, BlockFace.EAST};
                 for (BlockFace face : bf) {
                     Block at = block.getRelative(face);
@@ -401,13 +408,13 @@ public class MinecraftnoPlayerListener implements Listener {
         ItemStack itemHand = event.getPlayer().getItemInHand();
 
         if (event.getAction() == Action.LEFT_CLICK_AIR) {
-            if (player.isSneaking() && player.getItemInHand().getType() == Material.WATCH && wcfg.canChangeTime) {
+            if (player.isSneaking() && player.getItemInHand().getType() == Material.CLOCK && wcfg.canChangeTime && event.getHand() == EquipmentSlot.HAND) { // Check if we use main hand, if we don't then it will run twice, one for each hand.
                 player.setPlayerTime(player.getPlayerTimeOffset() - 1000, true);
                 event.setCancelled(true);
                 return;
             }
         } else if (event.getAction() == Action.RIGHT_CLICK_AIR) {
-            if (player.isSneaking() && player.getItemInHand().getType() == Material.WATCH && wcfg.canChangeTime) {
+            if (player.isSneaking() && player.getItemInHand().getType() == Material.CLOCK && wcfg.canChangeTime && event.getHand() == EquipmentSlot.HAND) { // Check if we use main hand, if we don't then it will run twice, one for each hand.
                 player.setPlayerTime(player.getPlayerTimeOffset() + 1000, true);
                 event.setCancelled(true);
                 return;
@@ -415,7 +422,7 @@ public class MinecraftnoPlayerListener implements Listener {
         } else if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
             switch (itemHand.getType()) {
                 case SLIME_BALL: {
-                    if (this.userHandler.getAccess(player) > 2) {
+                    if (this.userHandler.getAccess(player) > 2 && event.getHand() == EquipmentSlot.HAND) { // Check if we use main hand, if we don't then it will run twice, one for each hand.
                         if (wcfg.protectBlocks) {
                             this.blockHandler.setBlockProtection(this.userHandler.getUserId(UserHandler.SERVER_USERNAME), block);
                             this.blockHandler.setBlocklog(this.userHandler.getUserId(player), block, BlockLogReason.PROTECTED);
@@ -431,7 +438,7 @@ public class MinecraftnoPlayerListener implements Listener {
                 }
 
                 case PAPER: {
-                    if (this.userHandler.getAccess(player) > 2) {
+                    if (this.userHandler.getAccess(player) > 2 && event.getHand() == EquipmentSlot.HAND) { // Check if we use main hand, if we don't then it will run twice, one for each hand.
                         if (wcfg.protectBlocks) {
                             event.setCancelled(true);
                             String toolData = this.userHandler.getToolData(player);
@@ -483,7 +490,7 @@ public class MinecraftnoPlayerListener implements Listener {
         } else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             switch (itemHand.getType()) {
                 case STICK: {
-                    if (this.userHandler.getAccess(player) > 2 && wcfg.adminStick) {
+                    if (this.userHandler.getAccess(player) > 2 && wcfg.adminStick && event.getHand() == EquipmentSlot.HAND) { // Check if we use main hand, if we don't then it will run twice, one for each hand.
                         event.setCancelled(true);
                         this.blockHandler.setBlocklog(this.userHandler.getUserId(player), block, BlockLogReason.ADMINSTICKED);
                         this.blockHandler.deleteBlockProtection(block);
@@ -498,8 +505,8 @@ public class MinecraftnoPlayerListener implements Listener {
                     break;
                 }
 
-                case WATCH: {
-                    if (this.userHandler.getAccess(event.getPlayer()) >= 2 && !player.isSneaking()) {
+                case CLOCK: {
+                    if (this.userHandler.getAccess(event.getPlayer()) >= 2 && !player.isSneaking() && event.getHand() == EquipmentSlot.HAND) { // Check if we use main hand, if we don't then it will run twice, one for each hand.
                         // TODO:
                         // Gjøre dette i egen thread, slik serveren sin thread blir
                         // brukt til mer nyttig
@@ -532,7 +539,7 @@ public class MinecraftnoPlayerListener implements Listener {
                 }
 
                 case SLIME_BALL: {
-                    if (this.userHandler.getAccess(player) > 2) {
+                    if (this.userHandler.getAccess(player) > 2 && event.getHand() == EquipmentSlot.HAND) { // Check if we use main hand, if we don't then it will run twice, one for each hand.
                         if (wcfg.protectBlocks) {
                             if (this.blockinfoHandler.isProtected(block)) {
                                 this.blockHandler.deleteBlockProtection(block);
@@ -551,7 +558,7 @@ public class MinecraftnoPlayerListener implements Listener {
                 }
 
                 case PAPER: {
-                    if (this.userHandler.getAccess(player) > 2) {
+                    if (this.userHandler.getAccess(player) > 2 && event.getHand() == EquipmentSlot.HAND) { // Check if we use main hand, if we don't then it will run twice, one for each hand.
                         if (wcfg.protectBlocks) {
                             this.blockHandler.setBlockProtection(this.userHandler.getUserId(player), block);
                             this.blockHandler.setBlocklog(this.userHandler.getUserId(player), block, BlockLogReason.CHANGEOWNER);
@@ -568,7 +575,7 @@ public class MinecraftnoPlayerListener implements Listener {
                 case LAVA_BUCKET:
                 case WATER_BUCKET: {
 
-                    if (block.getType() == Material.RAILS
+                    if (block.getType() == Material.RAIL
                      || block.getType() == Material.POWERED_RAIL
                      || block.getType() == Material.ACTIVATOR_RAIL
                      || block.getType() == Material.DETECTOR_RAIL) {
@@ -579,7 +586,10 @@ public class MinecraftnoPlayerListener implements Listener {
                     break;
                 }
 
-                case FENCE: {
+                // This isn't really needed anymore, at least if I understand it correctly.
+                // As was only needed when you couldn't place fences in the air.
+                // Is also doesn't support the new fences from 1.8.
+                /*case FENCE: {
                     Block space = block.getRelative(event.getBlockFace());
                     Block down = space.getRelative(BlockFace.DOWN);
                     if (space.isEmpty() && (down.isEmpty() || down.isLiquid())) {
@@ -595,7 +605,7 @@ public class MinecraftnoPlayerListener implements Listener {
                         return;
                     }
                     break;
-                }
+                }*/
 
                 default: {
                     break;
@@ -702,7 +712,7 @@ public class MinecraftnoPlayerListener implements Listener {
                 }
             }
 
-            if ((block.getType() == Material.NOTE_BLOCK) || (block.getType() == Material.DIODE) || (block.getType() == Material.DIODE_BLOCK_OFF) || (block.getType() == Material.DIODE_BLOCK_ON)) {
+            if ((block.getType() == Material.NOTE_BLOCK) || (block.getType() == Material.REPEATER)) {
                 String owner = this.blockinfoHandler.getOwner(block);
                 if ((owner != null) && (owner.equalsIgnoreCase(player.getName())) || (!wcfg.protectBlocks)) {
                     return;
@@ -748,8 +758,8 @@ public class MinecraftnoPlayerListener implements Listener {
                 if (blocks.size() > 1) {
                     blocks.remove(0);
                 }
-                int id = block.getTypeId();
-                if (!cfg.defaultThroughBlock.contains(id)) {
+                Material material = block.getType();
+                if (!cfg.throughBlock.contains(material)) {
                     break;
                 }
             }

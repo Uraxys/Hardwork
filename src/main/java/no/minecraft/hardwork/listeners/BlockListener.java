@@ -23,7 +23,7 @@ public class BlockListener implements Listener {
         Block block = event.getBlock();
 
         // Yes, this is ugly. (BP is set in legacy code, then unset here.)
-        if (block.getType() == Material.SAPLING) {
+        if (block.getType().name().endsWith("_SAPLING") && !block.getType().name().contains("POTTED")) { // There are more than one sapling material now.
             this.hardwork.getBlockHandler().deleteBlockOwner(block);
         }
     }

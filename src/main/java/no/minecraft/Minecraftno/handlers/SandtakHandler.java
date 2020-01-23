@@ -1,7 +1,8 @@
 package no.minecraft.Minecraftno.handlers;
 
-import com.sk89q.worldedit.bukkit.selections.Selection;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
 
+import com.sk89q.worldedit.regions.Region;
 import no.minecraft.Minecraftno.Minecraftno;
 import no.minecraft.Minecraftno.handlers.data.SandtakData;
 
@@ -235,11 +236,11 @@ public class SandtakHandler {
      * Updates information about a players sandtakinventorystatus
      *
      * @param playerName Name of the player
-     * @param materialId Id of the material being added
+     * @param material Material being added
      *
      * @return true on success, false otherwise
      */
-    public boolean updateSandtakInventoryStatus(String playerName, int materialId) {
+    public boolean updateSandtakInventoryStatus(String playerName, Material material) {
         Connection conn = null;
         PreparedStatement ps = null;
         PreparedStatement ps2 = null;
@@ -248,11 +249,11 @@ public class SandtakHandler {
             ps = conn.prepareStatement("UPDATE `sandtak_inventory` SET `doublechestQuantity` = (`doublechestQuantity` + ?)" + "WHERE `userid` = (SELECT `id` FROM Minecraftno.users WHERE `name` = ?) AND `material` = ?");
             ps.setInt(1, 1); // quantity = 1 as we only allow one dk in the selection right now
             ps.setString(2, playerName);
-            ps.setInt(3, materialId);
+            ps.setInt(3, this.getSandtakMaterialID(material));
             if (ps.executeUpdate() == 0) { // affects no rows = we need to create a user row!
                 ps2 = conn.prepareStatement("INSERT INTO `sandtak_inventory`" + "(`userid`, `material`, `doublechestQuantity`) VALUES((SELECT `id` FROM Minecraftno.users WHERE `name` = ?), ?, ?)");
                 ps2.setString(1, playerName);
-                ps2.setInt(2, materialId);
+                ps2.setInt(2, this.getSandtakMaterialID(material));
                 ps2.setInt(3, 1); // quantity = 1 as we only allow one dk in the selection right now
                 ps2.executeUpdate();
             }
@@ -378,9 +379,6 @@ public class SandtakHandler {
      * @param material    Material id to fill the sandtak with
      */
     public void fillSandtak(String sandtakName, int amountOfDk, Material material) {
-        this.fillSandtak(sandtakName, amountOfDk, material, 0);
-    }
-    public void fillSandtak(String sandtakName, int amountOfDk, Material material, int data) {
         Location pos1 = this.sandtak.get(sandtakName).getPos1();
         Location pos2 = this.sandtak.get(sandtakName).getPos2();
         String worldName = this.sandtak.get(sandtakName).getWorldName();
@@ -419,7 +417,6 @@ public class SandtakHandler {
                     }
                     Block block = this.plugin.getServer().getWorld(worldName).getBlockAt(x, y, z);
                     block.setType(material);
-                    block.setData((byte) data);
                     counter++;
                 }
             }
@@ -429,14 +426,14 @@ public class SandtakHandler {
     /**
      * Verifies a players selection to make sure it contains a double chest filled with either stone or cobblestone
      *
-     * @param sel The players selection
+     * @param sel The players region
      *
      * @return true if selection is valid, false otherwise
      */
-    public boolean verifyValidSelection(Selection sel) {
+    public boolean verifyValidSelection(Region sel) {
         if (sel.getArea() == 2) {
-            Location pos1 = sel.getMaximumPoint();
-            Location pos2 = sel.getMinimumPoint();
+            Location pos1 = BukkitAdapter.adapt(BukkitAdapter.adapt(sel.getWorld()), sel.getMaximumPoint());
+            Location pos2 = BukkitAdapter.adapt(BukkitAdapter.adapt(sel.getWorld()), sel.getMinimumPoint());
 
             if (pos1.getBlock().getType().equals(Material.CHEST) && pos2.getBlock().getType().equals(Material.CHEST)) {
                 Chest chest = (Chest) pos1.getBlock().getState();
@@ -463,11 +460,11 @@ public class SandtakHandler {
     /**
      * Removes protection from the double chest, clears inventory, and breaks the block
      *
-     * @param sel Selection containing double chest
+     * @param sel Region containing double chest
      */
-    public void removeDoubleChest(Selection sel) { // this should be updated to include a single block and not two
-        Location pos1 = sel.getMaximumPoint();
-        Location pos2 = sel.getMinimumPoint();
+    public void removeDoubleChest(Region sel) { // this should be updated to include a single block and not two
+        Location pos1 = BukkitAdapter.adapt(BukkitAdapter.adapt(sel.getWorld()), sel.getMaximumPoint());
+        Location pos2 = BukkitAdapter.adapt(BukkitAdapter.adapt(sel.getWorld()), sel.getMinimumPoint());
 
         this.plugin.getBlockHandler().deleteBlockProtection(pos1.getBlock());
         this.plugin.getBlockHandler().deleteBlockProtection(pos2.getBlock());
@@ -483,13 +480,27 @@ public class SandtakHandler {
     /**
      * Returns the id of the material found inside the chest
      *
-     * @param sel Players selection containing the chest
+     * @param sel Players region containing the chest
      *
-     * @return id of material found inside chest
+     * @return material found inside chest
      */
-    public int getMaterialFromChest(Selection sel) {
-        Location pos1 = sel.getMaximumPoint();
+    public Material getMaterialFromChest(Region sel) {
+        Location pos1 = BukkitAdapter.adapt(BukkitAdapter.adapt(sel.getWorld()), sel.getMaximumPoint());
         Chest chest = (Chest) pos1.getBlock().getState();
-        return chest.getInventory().getItem(0).getTypeId();
+        return chest.getInventory().getItem(0).getType();
+    }
+
+    /**
+     * Gets the item ID from the given material.
+     * Note: Only works with Cobblestone & Stone, as this is used to support old sandtak material IDs.
+     *
+     * @param material The material to get the ID from.
+     *
+     * @return The item ID of the material, -1 if it isn't Cobblestone or Stone.
+     */
+    private int getSandtakMaterialID(Material material) {
+        if (material == Material.COBBLESTONE) return 4;
+        else if (material == Material.STONE) return 1;
+        else return -1; // If
     }
 }

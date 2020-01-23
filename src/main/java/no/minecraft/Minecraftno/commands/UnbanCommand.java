@@ -27,10 +27,10 @@ public class UnbanCommand extends MinecraftnoCommand {
                 if (victimName != null) {
                     if (this.userHandler.isBanned(victimName)) {
                         this.userHandler.unBanUser(victimName, false);
-                        this.logHandler.log(this.userHandler.getUserId(player), this.userHandler.getUserId(victimName), 0, 0, null, MinecraftnoLog.UNBAN);
+                        this.logHandler.log(this.userHandler.getUserId(player), this.userHandler.getUserId(victimName), 0, null, null, MinecraftnoLog.UNBAN);
                     } else if (this.userHandler.isWeekBanned(victimName)) {
                         this.userHandler.unBanUser(victimName, true);
-                        this.logHandler.log(this.userHandler.getUserId(player), this.userHandler.getUserId(victimName), 0, 0, null, MinecraftnoLog.UNBAN);
+                        this.logHandler.log(this.userHandler.getUserId(player), this.userHandler.getUserId(victimName), 0, null, null, MinecraftnoLog.UNBAN);
                     } else {
                         player.sendMessage(getErrorChatColor() + "Brukeren er ikke bannet. (" + getVarChatColor() + victimName + getErrorChatColor() + ")");
                         return true;

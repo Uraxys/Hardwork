@@ -1,8 +1,7 @@
 package no.minecraft.Minecraftno.listener;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import no.minecraft.Minecraftno.Minecraftno;
 import no.minecraft.Minecraftno.conf.ConfigurationServer;
@@ -93,7 +92,7 @@ public class MinecraftnoBlockListener implements Listener {
             event.setCancelled(true);
         }
 
-        if (cfg.noRemoveFromWaterLava.contains(event.getToBlock().getTypeId())) {
+        if (cfg.noRemoveFromWaterLava.contains(event.getToBlock().getType())) {
             event.setCancelled(true);
             return;
         }
@@ -103,8 +102,11 @@ public class MinecraftnoBlockListener implements Listener {
     public void onDispense(BlockDispenseEvent event) {
         ItemStack item = event.getItem();
 
-        Material[] mats = { Material.MONSTER_EGG, Material.EGG, Material.FIREBALL,
-                Material.TNT/*, Material.LAVA_BUCKET, Material.LAVA, Material.WATER_BUCKET, Material.WATER*/ };
+        Set<Material> mats = new HashSet<>();
+        mats.add(Material.EGG);
+        mats.add(Material.FIRE_CHARGE);
+        mats.add(Material.TNT);
+        mats.addAll(Arrays.stream(Material.values()).filter(material -> (material.name().endsWith("SPAWN_EGG"))).collect(Collectors.toSet()));
 
         for (Material mat : mats) {
         	if (mat == item.getType()) {
@@ -137,7 +139,7 @@ public class MinecraftnoBlockListener implements Listener {
             return;
         }
 
-        if (block.getType() == Material.RAILS || block.getType() == Material.TORCH) {
+        if (block.getType() == Material.RAIL || block.getType() == Material.TORCH) {
             if (block.getRelative(BlockFace.DOWN).getType() == Material.GLASS) {
                 event.setCancelled(true);
                 return;
@@ -156,7 +158,7 @@ public class MinecraftnoBlockListener implements Listener {
 
         if (player.getWorld().getEnvironment() == Environment.NETHER) {
             if (OwnerId == 0) {
-                if (block.getType() == Material.NETHER_BRICK || block.getType() == Material.NETHER_FENCE || block.getType() == Material.NETHER_BRICK_STAIRS || block.getType() == Material.MOB_SPAWNER) {
+                if (block.getType() == Material.NETHER_BRICK || block.getType() == Material.NETHER_BRICK_FENCE || block.getType() == Material.NETHER_BRICK_STAIRS || block.getType() == Material.SPAWNER) {
                     player.sendMessage(ChatColor.RED + "Denne blokken er beskyttet av serveren. Kontakt en vakt/stab dersom blokken skal fjernes.");
                     event.setCancelled(true);
                     return;
@@ -175,9 +177,12 @@ public class MinecraftnoBlockListener implements Listener {
             } else {
                 if (down != null) {
                     int downOwnerId = this.blockinfoHandler.getOwnerId(down);
-                    if (down.getType() == Material.DOUBLE_PLANT || down.getType() == Material.WOODEN_DOOR || down.getType() == Material.IRON_DOOR_BLOCK) {
+                    if (down.getType() == Material.LILAC || down.getType() == Material.ROSE_BUSH || down.getType() == Material.PEONY ||
+                            down.getType() == Material.TALL_GRASS || down.getType() == Material.LARGE_FERN || down.getType().name().endsWith("_DOOR")) {
                         // Private item?
-                        if (this.privateHandler.handlePrivateBlockBreak(down, player) && down.getType() != Material.DOUBLE_PLANT) {
+                        if (this.privateHandler.handlePrivateBlockBreak(down, player) && down.getType() != Material.LILAC &&
+                                down.getType() != Material.ROSE_BUSH && down.getType() != Material.PEONY && down.getType() != Material.TALL_GRASS &&
+                                down.getType() != Material.LARGE_FERN) {
                             event.setCancelled(true);
                             return;
                         } else {
@@ -208,7 +213,7 @@ public class MinecraftnoBlockListener implements Listener {
 
                 if (up != null) {
                     int upOwnerId = this.blockinfoHandler.getOwnerId(up);
-                    if (cfg.protectBlockUp.contains(up.getTypeId())) {
+                    if (cfg.protectBlockUp.contains(up.getType())) {
                         if ((upOwnerId != 0) && (upOwnerId != this.userHandler.getUserId(player))) {
                             if ((groupId != 0) && (groupId != groupHandler.getGroupIDFromUserId(upOwnerId))) {
                                 player.sendMessage(ChatColor.RED + this.userHandler.getNameFromId(upOwnerId) + " eier blokken over som er beskyttet.");
@@ -246,13 +251,13 @@ public class MinecraftnoBlockListener implements Listener {
                     player.sendMessage(ChatColor.RED + "Denne blokken kan kun fjernes med silk touch.");
                     event.setCancelled(true);
                     return;
-                } else if (block.getType() == Material.WOODEN_DOOR || block.getType() == Material.IRON_DOOR_BLOCK) {
+                } else if (block.getType().name().endsWith("_DOOR")) {
                     // Private item?
                     if (this.privateHandler.handlePrivateBlockBreak(block, player)) {
                         event.setCancelled(true);
                         return;
                     }
-                } else if ((block.getType() == Material.PISTON_EXTENSION) || (block.getType() == Material.PISTON_MOVING_PIECE)) {
+                } else if (block.getType() == Material.MOVING_PISTON) {
                     event.setCancelled(true);
                     return;
                 }
@@ -300,7 +305,7 @@ public class MinecraftnoBlockListener implements Listener {
                         }
                     }
                 } else {
-                    if (cfg.protectUnprotected.contains(block.getTypeId())) {
+                    if (cfg.protectUnprotected.contains(block.getType())) {
                         player.sendMessage(ChatColor.RED + "Denne blokken blir ansett som verdifull og er beskyttet.");
                         player.sendMessage(ChatColor.RED + "Kontakt en vakt/stab dersom blokken skal fjernes.");
                         event.setCancelled(true);
@@ -333,10 +338,10 @@ public class MinecraftnoBlockListener implements Listener {
             event.setBuild(false);
             event.setCancelled(true);
             return;
-        } else if (cfg.illegalItems.contains(event.getBlockPlaced().getTypeId())) {
+        } else if (cfg.illegalItems.contains(event.getBlockPlaced().getType())) {
             if (access < 3) {
                 player.getInventory().remove(player.getItemInHand());
-                this.plugin.getLogHandler().log(this.userHandler.getUserId(player), 0, 0, event.getBlockPlaced().getTypeId(), player.getLocation().toString(), MinecraftnoLog.ILLEGAL);
+                this.plugin.getLogHandler().log(this.userHandler.getUserId(player), 0, 0, event.getBlockPlaced().getType().name(), player.getLocation().toString(), MinecraftnoLog.ILLEGAL);
                 event.setBuild(false);
                 event.setCancelled(true);
                 return;
@@ -384,15 +389,18 @@ public class MinecraftnoBlockListener implements Listener {
             event.setBuild(false);
             event.setCancelled(true);
             return;
-        } else if (event.getBlockReplacedState().getType() == Material.STEP) {
+        } else if (event.getBlockReplacedState().getType().name().endsWith("_SLAB")) {
             Block getBlock = event.getBlockReplacedState().getBlock();
             int ownerId = this.blockinfoHandler.getOwnerId(getBlock);
             if ((ownerId != 0) && (ownerId != this.userHandler.getUserId(player))) {
                 event.setCancelled(true);
                 return;
             }
-        } else if (block.getType() == Material.BED_BLOCK) {
-            this.blockHandler.setBlockProtection(this.userHandler.getUserId(player), block.getRelative(new Bed(Material.BED, block.getData()).getFacing()));
+        } else if (block.getType().name().endsWith("_BED")) {
+            if (block.getBlockData() instanceof org.bukkit.block.data.type.Bed) {
+                org.bukkit.block.data.type.Bed bed = (org.bukkit.block.data.type.Bed) block.getBlockData();
+                this.blockHandler.setBlockProtection(this.userHandler.getUserId(player), block.getRelative(bed.getFacing()));
+            }
         }
 
         if (block.getType() == Material.ANVIL) {
@@ -417,7 +425,7 @@ public class MinecraftnoBlockListener implements Listener {
         }
 
         if (player.isInsideVehicle() && player.getVehicle().getType() == EntityType.MINECART) {
-            if (block.getType() != Material.SEEDS) {
+            if (!block.getType().name().endsWith("_SEEDS")) {
                 player.sendMessage(ChatColor.RED + "Du har ikke lov å plassere blokker imens du kjører minecart.");
                 event.setCancelled(true);
                 return;
@@ -426,7 +434,7 @@ public class MinecraftnoBlockListener implements Listener {
 
         /* Check rails */
         Block down = block.getRelative(BlockFace.DOWN);
-        Material[] railTypes = { Material.RAILS, Material.ACTIVATOR_RAIL, Material.POWERED_RAIL, Material.DETECTOR_RAIL };
+        Material[] railTypes = { Material.RAIL, Material.ACTIVATOR_RAIL, Material.POWERED_RAIL, Material.DETECTOR_RAIL };
         if (down != null && Arrays.asList(railTypes).contains(down.getType())) {
             String message = ChatColor.RED + "{OWNER_NAME} eier railen under, så du har ikke lov å plassere en blokk over den.";
             if (this.blockinfoHandler.canInteractWithBlock(down, player, message, true) == false) {
@@ -442,7 +450,7 @@ public class MinecraftnoBlockListener implements Listener {
             return;
         }
 
-        if (cfg.nonProtectBlocks.contains(block.getTypeId()) && block.getData() == (byte) 0) {
+        if (cfg.nonProtectBlocks.contains(block.getType())) {
             this.blockHandler.deleteBlockProtection(block);
         } else {
             this.blockHandler.setBlockProtection(this.userHandler.getUserId(player), block);
@@ -547,7 +555,7 @@ public class MinecraftnoBlockListener implements Listener {
             int firstOwnerId = this.blockinfoHandler.getOwnerId(firstBlock);
             if (firstOwnerId != 0) {
                 if (firstOwnerId == getBlockOwnerId) {
-                    if ((firstBlock.getType() == Material.REDSTONE_WIRE) || (firstBlock.getType() == Material.REDSTONE) || (firstBlock.getType() == Material.DIODE_BLOCK_ON) || (firstBlock.getType() == Material.DIODE_BLOCK_OFF)) {
+                    if ((firstBlock.getType() == Material.REDSTONE_WIRE) || (firstBlock.getType() == Material.REDSTONE) || (firstBlock.getType() == Material.REPEATER)) {
                         event.setCancelled(true);
                         return;
                     }
@@ -557,13 +565,13 @@ public class MinecraftnoBlockListener implements Listener {
                 }
             }
             for (Block block : blocks) {
-                int id = block.getTypeId();
+                Material material = block.getType();
                 Block forwardBlock = block.getRelative(forwardFace);
                 Block backBlock = block.getRelative(backFace);
                 int forwardblockOwnerId = this.blockinfoHandler.getOwnerId(forwardBlock);
                 if (forwardblockOwnerId != 0) {
                     if (forwardblockOwnerId == getBlockOwnerId) {
-                        if ((forwardBlock.getType() == Material.REDSTONE_WIRE) || (forwardBlock.getType() == Material.REDSTONE) || (forwardBlock.getType() == Material.DIODE_BLOCK_ON) || (forwardBlock.getType() == Material.DIODE_BLOCK_OFF)) {
+                        if ((forwardBlock.getType() == Material.REDSTONE_WIRE) || (forwardBlock.getType() == Material.REDSTONE) || (forwardBlock.getType() == Material.REPEATER)) {
                             event.setCancelled(true);
                             return;
                         }
@@ -578,7 +586,7 @@ public class MinecraftnoBlockListener implements Listener {
                         if (forwardBlock.getType() == Material.AIR) {
                             add.add(forwardBlock);
                         }
-                        if ((backBlock.getType() == Material.PISTON_BASE)) {
+                        if (backBlock.getType() == Material.PISTON || backBlock.getType() == Material.STICKY_PISTON) {
                             delete.add(block);
                         }
                         if (!(this.blockinfoHandler.isProtected(backBlock))) {
@@ -589,7 +597,9 @@ public class MinecraftnoBlockListener implements Listener {
                         return;
                     }
                 } else {
-                    if ((id == 19) || (id == 20) || (id == 35) || (id == 41) || (id == 42) || (id == 45) || (id == 47) || (id == 57) || (id == 54) || (id == 55) || (id == 85) || (id == 89)) {
+                    if ((material == Material.SPONGE) || (material == Material.GLASS) || (material.name().endsWith("_WOOL")) || (material == Material.GOLD_BLOCK) ||
+                            (material == Material.IRON_BLOCK) || (material == Material.BRICKS) || (material == Material.BOOKSHELF) || (material == Material.DIAMOND_BLOCK) ||
+                            (material == Material.CHEST) || (material == Material.REDSTONE_WIRE) || (material.name().endsWith("_FENCE")) || (material == Material.GLOWSTONE)) {
                         event.setCancelled(true);
                         return;
                     }
@@ -625,7 +635,7 @@ public class MinecraftnoBlockListener implements Listener {
                 Block firstblock = event.getBlock().getRelative(event.getDirection());
                 int blockOwnerId = this.blockinfoHandler.getOwnerId(block);
                 int getBlockOwnerId = this.blockinfoHandler.getOwnerId(event.getBlock());
-                int id = block.getTypeId();
+                Material material = block.getType();
                 if (blockOwnerId != 0) {
                     if (blockOwnerId == getBlockOwnerId) {
                         if (event.isSticky()) {
@@ -637,7 +647,9 @@ public class MinecraftnoBlockListener implements Listener {
                         return;
                     }
                 } else {
-                    if ((id == 19) || (id == 20) || (id == 35) || (id == 41) || (id == 42) || (id == 45) || (id == 47) || (id == 57) || (id == 54) || (id == 55) || (id == 85) || (id == 89)) {
+                    if ((material == Material.SPONGE) || (material == Material.GLASS) || (material.name().endsWith("_WOOL")) || (material == Material.GOLD_BLOCK) ||
+                            (material == Material.IRON_BLOCK) || (material == Material.BRICKS) || (material == Material.BOOKSHELF) || (material == Material.DIAMOND_BLOCK) ||
+                            (material == Material.CHEST) || (material == Material.REDSTONE_WIRE) || (material.name().endsWith("_FENCE")) || (material == Material.GLOWSTONE)) {
                         event.setCancelled(true);
                         return;
                     }
@@ -651,9 +663,9 @@ public class MinecraftnoBlockListener implements Listener {
     }
 
     protected boolean handleBlockNotOwned(final Player player, final Block block, int ownerId) {
-        player.sendBlockChange(block.getLocation(), block.getType(), block.getData());
+        player.sendBlockChange(block.getLocation(), block.getType().createBlockData());
         String owner = this.userHandler.getNameFromId(ownerId);
-        if (!owner.equalsIgnoreCase(UserHandler.SERVER_USERNAME) && !owner.equalsIgnoreCase("hardwork")) {
+        if (owner != null && !owner.equalsIgnoreCase(UserHandler.SERVER_USERNAME) && !owner.equalsIgnoreCase("hardwork")) {
             player.sendMessage(ChatColor.RED + owner + " eier denne blokken. Om dere samarbeider kan");
             player.sendMessage(ChatColor.RED + "dere lage en gruppe, se /help for mer informasjon.");
             player.sendMessage(ChatColor.RED + "Dersom blokken ikke skulle være her, kontakt en vakt eller stab.");
@@ -687,24 +699,26 @@ public class MinecraftnoBlockListener implements Listener {
                 block.getWorld().dropItemNaturally(loc, new ItemStack(Material.GLASS, 1));
                 block.setType(Material.AIR);
                 truefalse = true;
-            } else if (block.getType() == Material.STAINED_GLASS) {
-                block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.STAINED_GLASS, 1, block.getData()));
+            } else if (block.getType().name().endsWith("_STAINED_GLASS")) {
+                block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(block.getType(), 1));
                 block.setType(Material.AIR);
                 truefalse = true;
-            } else if (block.getType() == Material.THIN_GLASS) {
+            } else if (block.getType() == Material.GLASS_PANE) {
                 Location loc = block.getLocation();
-                block.getWorld().dropItemNaturally(loc, new ItemStack(Material.THIN_GLASS, 1));
+                block.getWorld().dropItemNaturally(loc, new ItemStack(Material.GLASS_PANE, 1));
                 block.setType(Material.AIR);
                 truefalse = true;
-            } else if (block.getType() == Material.STAINED_GLASS_PANE) {
-                block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.STAINED_GLASS_PANE, 1, block.getData()));
+            } else if (block.getType().name().endsWith("_STAINED_GLASS_PANE")) {
+                block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(block.getType(), 1));
                 block.setType(Material.AIR);
                 truefalse = true;
-            } else if (block.getType() == Material.DOUBLE_STEP) {
+
+            // Isn't needed anymore as Minecraft has this block now.
+            /*} else if (block.getType() == Material.DOUBLE_STEP) {
                 Location loc = block.getLocation();
                 block.getWorld().dropItemNaturally(loc, new ItemStack(Material.STEP, 2, block.getData()));
                 block.setType(Material.AIR);
-                truefalse = true;
+                truefalse = true;*/
             } else if (block.getType() == Material.GLOWSTONE) {
                 if (!player.getItemInHand().getEnchantments().containsKey(Enchantment.SILK_TOUCH)) {
                     Location loc = block.getLocation();
@@ -714,14 +728,14 @@ public class MinecraftnoBlockListener implements Listener {
                 }
             }
         } else {
-            block.setTypeId(0);
+            block.setType(Material.AIR);
         }
         return truefalse;
     }
 
     public static boolean isBlockWaterAndLava(World world, int ox, int oy, int oz) {
         Block block = world.getBlockAt(ox, oy, oz);
-        int id = block.getTypeId();
-        return (id == 8) || (id == 9) || (id == 10) || (id == 11);
+        Material mat = block.getType();
+        return (mat == Material.WATER || mat == Material.LAVA);
     }
 }

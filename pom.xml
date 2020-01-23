@@ -3,11 +3,11 @@
 
     <groupId>no.minecraft</groupId>
     <artifactId>Minecraftno</artifactId>
-    <version>2.7.2-1-SNAPSHOT</version>
+    <version>2.8-SNAPSHOT</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<main.class>no.minecraft.Minecraftno.Minecraftno</main.class>
+        <main.class>no.minecraft.Minecraftno.Minecraftno</main.class>
     </properties>
 
     <organization>
@@ -24,7 +24,7 @@
 
         <developer>
             <id>ventrec</id>
-            <name>Runar Jørgensen</name>
+            <name>Runar JĂ¸rgensen</name>
             <email>ventrec@ventrec.org</email>
         </developer>
 
@@ -40,22 +40,22 @@
             <email>jckf@jckf.no</email>
         </developer>
 
-		<developer>
-			<id>jimbo8</id>
-			<name>Thomas Dale</name>
-			<email>apekatten321@live.com</email>
-		</developer>
+        <developer>
+            <id>jimbo8</id>
+            <name>Thomas Dale</name>
+            <email>apekatten321@live.com</email>
+        </developer>
     </developers>
 
     <repositories>
         <repository>
             <id>spigot-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
-		</repository>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
 
         <repository>
             <id>sk89q-repo</id>
-            <url>http://maven.sk89q.com/repo</url>
+            <url>https://maven.enginehub.org/repo/</url>
 
             <snapshots><checksumPolicy>ignore</checksumPolicy></snapshots>
             <releases><checksumPolicy>ignore</checksumPolicy></releases>
@@ -63,12 +63,13 @@
     </repositories>
 
     <dependencies>
-		<dependency>
-          	<groupId>org.spigotmc</groupId>
-          	<artifactId>spigot-api</artifactId>
-          	<version>1.8.8-R0.1-SNAPSHOT</version>
-		</dependency>
-		
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>1.15.1-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
@@ -76,16 +77,16 @@
         </dependency>
 
         <dependency>
-            <groupId>com.sk89q</groupId>
-            <artifactId>worldedit</artifactId>
-            <version>5.6-SNAPSHOT</version>
+            <groupId>com.sk89q.worldedit</groupId>
+            <artifactId>worldedit-bukkit</artifactId>
+            <version>7.0.0</version>
         </dependency>
 
         <dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>2.4</version>
-		</dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.4</version>
+        </dependency>
 
         <dependency>
             <groupId>net.sf.ehcache</groupId>
@@ -132,8 +133,8 @@
                 <version>2.3.2</version>
 
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>8</source>
+                    <target>8</target>
                 </configuration>
             </plugin>
 

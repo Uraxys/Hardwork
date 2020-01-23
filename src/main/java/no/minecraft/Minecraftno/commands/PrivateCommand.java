@@ -2,6 +2,10 @@ package no.minecraft.Minecraftno.commands;
 
 import java.util.ArrayList;
 
+import com.sk89q.worldedit.IncompleteRegionException;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.regions.Region;
 import no.minecraft.Minecraftno.Minecraftno;
 import no.minecraft.Minecraftno.handlers.GroupHandler;
 import no.minecraft.Minecraftno.handlers.WEBridge;
@@ -14,9 +18,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.entity.Player;
-
-import com.sk89q.worldedit.Vector;
-import com.sk89q.worldedit.bukkit.selections.Selection;
 
 public class PrivateCommand extends MinecraftnoCommand {
 
@@ -61,7 +62,13 @@ public class PrivateCommand extends MinecraftnoCommand {
     }
 
     public void runSelection(Player player, int mode, boolean remove) {
-        Selection sel = this.weBridge.getWePlugin().getSelection(player);
+        Region sel;
+        try {
+            sel = this.weBridge.getWePlugin().getSession(player).getSelection(BukkitAdapter.adapt(player.getLocation().getWorld()));
+        } catch (IncompleteRegionException ignore) {
+            player.sendMessage(getErrorChatColor() + "Du har ikke valgt et område.");
+            return;
+        }
         if (sel == null) {
             player.sendMessage(getErrorChatColor() + "Du har ikke valgt et område.");
             return;
@@ -72,9 +79,8 @@ public class PrivateCommand extends MinecraftnoCommand {
                 "Din selection var på: " + getVarChatColor() + sel.getArea());
             return;
         }
-
-        Vector min = new Vector(sel.getNativeMinimumPoint());
-        Vector max = new Vector(sel.getNativeMaximumPoint());
+        BlockVector3 min = sel.getMinimumPoint();
+        BlockVector3 max = sel.getMaximumPoint();
 
         int totalTried = 0;
         int totalAdded = 0;
@@ -172,8 +178,8 @@ public class PrivateCommand extends MinecraftnoCommand {
      */
     private boolean isDoor(Material mat) {
         if (
-               mat == Material.WOODEN_DOOR
-            || mat == Material.IRON_DOOR_BLOCK
+               mat == Material.OAK_DOOR
+            || mat == Material.IRON_DOOR
             || mat == Material.SPRUCE_DOOR
             || mat == Material.ACACIA_DOOR
             || mat == Material.JUNGLE_DOOR

@@ -48,7 +48,7 @@ public class KickCommand extends MinecraftnoCommand {
                 }
             }
 
-            this.logHandler.log(this.userHandler.getUserId(player), this.userHandler.getUserId(kick), 0, 0, msg, MinecraftnoLog.KICK);
+            this.logHandler.log(this.userHandler.getUserId(player), this.userHandler.getUserId(kick), 0, null, msg, MinecraftnoLog.KICK);
             this.userHandler.updatePlayer(kick, 4);
             kick.kickPlayer(msg);
             return true;

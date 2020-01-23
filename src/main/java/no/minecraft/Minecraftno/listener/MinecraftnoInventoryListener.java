@@ -54,7 +54,7 @@ public class MinecraftnoInventoryListener implements Listener {
         ItemStack result = event.getResult();
         final Block block = event.getBlock();
 
-        if (block.getType() == Material.BURNING_FURNACE && result.getType() == Material.BONE && source.getType() == Material.MILK_BUCKET) {
+        if (block.getType() == Material.FURNACE && result.getType() == Material.BONE && source.getType() == Material.MILK_BUCKET) {
             block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.BUCKET, 1));
         }
     }

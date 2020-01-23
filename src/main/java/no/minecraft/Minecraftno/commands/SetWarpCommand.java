@@ -27,7 +27,7 @@ public class SetWarpCommand extends MinecraftnoCommand {
 
                 if (success) {
                     player.sendMessage(getOkChatColor() + "Warp satt: " + getVarChatColor() + args[0]);
-                    this.logHandler.log(this.userHandler.getUserId(player), 0, 0, 0, args[0], MinecraftnoLog.SETWARP);
+                    this.logHandler.log(this.userHandler.getUserId(player), 0, 0, null, args[0], MinecraftnoLog.SETWARP);
                 } else {
                     player.sendMessage(getErrorChatColor() + "Navnet kan bare inneholde bokstaver (" + getVarChatColor() + args[0] + getErrorChatColor() + ")");
                 }

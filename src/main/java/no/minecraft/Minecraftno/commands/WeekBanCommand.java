@@ -28,7 +28,7 @@ public class WeekBanCommand extends MinecraftnoCommand {
             Player victim = this.plugin.playerMatch(args[0]);
             if (victim != null) {
                 if (this.userHandler.WeekbanUser(victim, build.toString(), player)) {
-                    this.logHandler.log(this.userHandler.getUserId(player), this.userHandler.getUserId(victim), 0, 0, build.toString(), MinecraftnoLog.WEEKBAN);
+                    this.logHandler.log(this.userHandler.getUserId(player), this.userHandler.getUserId(victim), 0, null, build.toString(), MinecraftnoLog.WEEKBAN);
                     for (Player reciever : this.plugin.getServer().getOnlinePlayers()) {
                         if (this.userHandler.getAnnonseringer(reciever)) {
                             reciever.sendMessage(victim.getDisplayName() + getDefaultChatColor() + " ble ukesbannet: " + getVarChatColor() + build.toString());

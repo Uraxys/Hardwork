@@ -160,9 +160,9 @@ public class MinecraftnoHangingListener implements Listener {
     }
 
     private boolean handleRemovedHanging(Player player, Hanging hang, boolean isProtected) {
-        int typeid = getTypeEntity(hang.getType());
-        if (typeid != -1) {
-            this.blockHandler.setBlocklog(this.userHandler.getUserId(player), hang.getLocation(), typeid, BlockLogReason.FJERNET);
+        String type = getTypeEntity(hang.getType());
+        if (!type.equals("-1")) {
+            this.blockHandler.setBlocklog(this.userHandler.getUserId(player), hang.getLocation(), type, BlockLogReason.FJERNET);
 
             if (isProtected) {
                 this.blockHandler.deleteBlockProtection(hang.getLocation());
@@ -177,11 +177,11 @@ public class MinecraftnoHangingListener implements Listener {
     }
 
     private boolean addHanging(Entity entity, Player player) {
-        int typeid = getTypeEntity(entity.getType());
-        if (typeid != -1) {
+        String type = getTypeEntity(entity.getType());
+        if (!type.equals("-1")) {
             int id = this.userHandler.getUserId(player);
             this.blockHandler.setBlockProtection(id, entity.getLocation());
-            this.blockHandler.setBlocklog(id, entity.getLocation(), typeid, BlockLogReason.PLASSERTE);
+            this.blockHandler.setBlocklog(id, entity.getLocation(), type, BlockLogReason.PLASSERTE);
             return true;
         } else {
             // This should not happend since this HangingEvent only apply to
@@ -196,17 +196,17 @@ public class MinecraftnoHangingListener implements Listener {
      *
      * @param en EntityType
      *
-     * @return -1 if not supported by Hanging BP.
+     * @return '-1' if not supported by Hanging BP.
      */
-    private int getTypeEntity(EntityType en) {
+    private String getTypeEntity(EntityType en) {
         if (en == EntityType.PAINTING) {
-            return Material.PAINTING.getId();
+            return Material.PAINTING.name();
         } else if (en == EntityType.ITEM_FRAME) {
-            return Material.ITEM_FRAME.getId();
+            return Material.ITEM_FRAME.name();
         } else if (en == EntityType.LEASH_HITCH) {
-            return Material.LEASH.getId();
+            return Material.LEAD.name();
         } else {
-            return -1;
+            return "-1";
         }
     }
 }

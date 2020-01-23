@@ -83,7 +83,7 @@ public class MinecraftnoVehicleListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onVehicleBlockCollision(VehicleBlockCollisionEvent event) {
         if (event.getVehicle() instanceof Boat) {
-            if ((!event.getVehicle().isEmpty()) && ((event.getBlock().getTypeId() != 8) || (event.getBlock().getTypeId() != 9))) {
+            if ((!event.getVehicle().isEmpty()) && !(event.getBlock().getType() == Material.WATER)) {
                 Player localPlayer = (Player) event.getVehicle().getPassenger();
                 event.getVehicle().teleport(localPlayer.getLocation());
             }
@@ -95,7 +95,7 @@ public class MinecraftnoVehicleListener implements Listener {
         Vehicle vehicle = event.getVehicle();
 
         // Kun minecarts!
-        if (!(vehicle instanceof Minecart || vehicle instanceof StorageMinecart)) {
+        if (!(vehicle instanceof Minecart)) { // 'vehicle instanceof StorageMinecart' isn't needed as 'StorageMinecart' extends Minecart.
             return;
         }
 
@@ -110,121 +110,120 @@ public class MinecraftnoVehicleListener implements Listener {
 
         if (vehicle instanceof Minecart) {
             if (from.getBlockX() != to.getBlockX() || from.getBlockY() != to.getBlockY() || from.getBlockZ() != to.getBlockZ()) {
-                if (under.getType() == Material.WOOL) {
-                    if (color == DyeColor.BLUE.getWoolData()) {
-                        Block skilt = under.getRelative(BlockFace.DOWN);
-                        if (skilt != null && skilt.getType() == Material.SIGN_POST) {
-                            Sign sign = (Sign) skilt.getState();
-                            if (player != null) {
-                                String message = ChatColor.GREEN + sign.getLine(0) + sign.getLine(1) + sign.getLine(2) + sign.getLine(3);
-                                player.sendMessage(message);
-                                return;
-                            }
+                Material underType = under.getType();
+                if (underType == Material.BLUE_WOOL) {
+                    Block skilt = under.getRelative(BlockFace.DOWN);
+                    if (skilt != null && (signBlock.getState() instanceof Sign)) {
+                        Sign sign = (Sign) skilt.getState();
+                        if (player != null) {
+                            String message = ChatColor.GREEN + sign.getLine(0) + sign.getLine(1) + sign.getLine(2) + sign.getLine(3);
+                            player.sendMessage(message);
+                            return;
                         }
-                    } else if (color == DyeColor.GRAY.getWoolData()) {
-                        // BREMSE 50%
-                        Vector speed = cart.getVelocity();
-                        speed.setX(speed.getX() / 4);
-                        speed.setZ(speed.getZ() / 4);
-                        cart.setVelocity(speed);
-                        cart.setMaxSpeed(maxSpeed / 4);
-                    } else if (color == DyeColor.SILVER.getWoolData()) {
-                        // BREMSE 25%
-                        Vector speed = cart.getVelocity();
-                        speed.setX(speed.getX() / 2);
-                        speed.setZ(speed.getZ() / 2);
-                        cart.setVelocity(speed);
-                        cart.setMaxSpeed(maxSpeed / 2);
-                    } else if (color == DyeColor.PINK.getWoolData()) {
-                        cart.eject();
+                    }
+                } else if (underType == Material.GRAY_WOOL) {
+                    // BREMSE 50%
+                    Vector speed = cart.getVelocity();
+                    speed.setX(speed.getX() / 4);
+                    speed.setZ(speed.getZ() / 4);
+                    cart.setVelocity(speed);
+                    cart.setMaxSpeed(maxSpeed / 4);
+                } else if (underType == Material.LIGHT_GRAY_WOOL) {
+                    // BREMSE 25%
+                    Vector speed = cart.getVelocity();
+                    speed.setX(speed.getX() / 2);
+                    speed.setZ(speed.getZ() / 2);
+                    cart.setVelocity(speed);
+                    cart.setMaxSpeed(maxSpeed / 2);
+                } else if (underType == Material.PINK_WOOL) {
+                    cart.eject();
+                    return;
+                } else if (underType == Material.YELLOW_WOOL && !under.isBlockIndirectlyPowered()) {
+                    Vector speed = cart.getVelocity();
+                    speed.setX(-speed.getX());
+                    speed.setZ(-speed.getZ());
+                    cart.setVelocity(speed);
+                } else if (underType == Material.RED_WOOL) {
+                    cart.setVelocity(cart.getVelocity().multiply(0.0));
+                } else if (underType == Material.BLACK_WOOL && !under.isBlockIndirectlyPowered() && (signBlock.getState() instanceof Sign)) {
+                    Sign sign = (Sign) signBlock.getState();
+                    for (String lines : sign.getLines()) {
+                        if (lines.equalsIgnoreCase("[Stasjon]")) {
+                            Vector speed = new Vector();
+                            speed.setX(0);
+                            speed.setY(0);
+                            speed.setZ(0);
+                            cart.setVelocity(speed);
+                            return;
+                        }
+                    }
+                } else if (underType == Material.BROWN_WOOL && (signBlock.getState() instanceof Sign)) {
+                    if (event.getVehicle().getType() != EntityType.MINECART_CHEST) {
                         return;
-                    } else if (color == DyeColor.YELLOW.getWoolData() && !under.isBlockIndirectlyPowered()) {
-                        Vector speed = cart.getVelocity();
-                        speed.setX(-speed.getX());
-                        speed.setZ(-speed.getZ());
-                        cart.setVelocity(speed);
-                    } else if (color == DyeColor.RED.getWoolData()) {
-                        cart.setVelocity(cart.getVelocity().multiply(0.0));
-                    } else if (color == DyeColor.BLACK.getWoolData() && !under.isBlockIndirectlyPowered() && signBlock.getType().equals(Material.SIGN_POST)) {
-                        Sign sign = (Sign) signBlock.getState();
-                        for (String lines : sign.getLines()) {
-                            if (lines.equalsIgnoreCase("[Stasjon]")) {
-                                Vector speed = new Vector();
-                                speed.setX(0);
-                                speed.setY(0);
-                                speed.setZ(0);
-                                cart.setVelocity(speed);
+                    }
+                    Sign signe = (Sign) signBlock.getState();
+                    for (String lines : signe.getLines()) {
+                        if (lines.equalsIgnoreCase("[Mottak]")) {
+                            Block track = to.getBlock();
+                            if (track.getData() == 0x0) {
+                                Block b_l = track.getRelative(-2, 0, 0);
+                                Block b_r = track.getRelative(+2, 0, 0);
+                                if (b_l.getState() instanceof Chest) {
+                                    Chest chest = (Chest) b_l.getState();
+                                    depositAll(chest, event.getVehicle());
+                                } else if (b_r.getState() instanceof Chest) {
+                                    Chest chest = (Chest) b_r.getState();
+                                    depositAll(chest, event.getVehicle());
+                                }
+                            } else if (track.getData() == 0x1) {
+                                Block b_l = track.getRelative(0, 0, +2);
+                                Block b_r = track.getRelative(0, 0, -2);
+                                if (b_l.getState() instanceof Chest) {
+                                    Chest chest = (Chest) b_l.getState();
+                                    depositAll(chest, event.getVehicle());
+                                } else if (b_r.getState() instanceof Chest) {
+                                    Chest chest = (Chest) b_r.getState();
+                                    depositAll(chest, event.getVehicle());
+                                }
+                            }
+                        }
+                    }
+                } else if (underType == Material.CYAN_WOOL && (signBlock.getState() instanceof Sign)) {
+                    if (event.getVehicle().getType() != EntityType.MINECART_CHEST) {
+                        return;
+                    }
+                    Sign signe = (Sign) signBlock.getState();
+                    for (String lines : signe.getLines()) {
+                        if (lines.equalsIgnoreCase("[Mottak]")) {
+                            ItemStack item = null;
+                            try {
+                                item = this.plugin.matchItem(signe.getLines()[2]);
+                            } catch (Exception e) {
                                 return;
                             }
-                        }
-                    } else if (color == DyeColor.BROWN.getWoolData() && (signBlock.getState() instanceof Sign)) {
-                        if (event.getVehicle().getType() != EntityType.MINECART_CHEST) {
-                            return;
-                        }
-                        Sign signe = (Sign) signBlock.getState();
-                        for (String lines : signe.getLines()) {
-                            if (lines.equalsIgnoreCase("[Mottak]")) {
-                                Block track = to.getBlock();
-                                if (track.getData() == 0x0) {
-                                    Block b_l = track.getRelative(-2, 0, 0);
-                                    Block b_r = track.getRelative(+2, 0, 0);
-                                    if (b_l.getState() instanceof Chest) {
-                                        Chest chest = (Chest) b_l.getState();
-                                        depositAll(chest, event.getVehicle());
-                                    } else if (b_r.getState() instanceof Chest) {
-                                        Chest chest = (Chest) b_r.getState();
-                                        depositAll(chest, event.getVehicle());
-                                    }
-                                } else if (track.getData() == 0x1) {
-                                    Block b_l = track.getRelative(0, 0, +2);
-                                    Block b_r = track.getRelative(0, 0, -2);
-                                    if (b_l.getState() instanceof Chest) {
-                                        Chest chest = (Chest) b_l.getState();
-                                        depositAll(chest, event.getVehicle());
-                                    } else if (b_r.getState() instanceof Chest) {
-                                        Chest chest = (Chest) b_r.getState();
-                                        depositAll(chest, event.getVehicle());
-                                    }
+                            Block track = to.getBlock();
+                            if (track.getData() == 0x0) {
+                                Block b_l = track.getRelative(-2, 0, 0);
+                                Block b_r = track.getRelative(+2, 0, 0);
+                                if (b_l.getState() instanceof Chest) {
+                                    Chest chest = (Chest) b_l.getState();
+                                    depositID(chest, event.getVehicle(), item);
+                                } else if (b_r.getState() instanceof Chest) {
+                                    Chest chest = (Chest) b_r.getState();
+                                    depositID(chest, event.getVehicle(), item);
+                                }
+                            } else if (track.getData() == 0x1) {
+                                Block b_l = track.getRelative(0, 0, +2);
+                                Block b_r = track.getRelative(0, 0, -2);
+                                if (b_l.getState() instanceof Chest) {
+                                    Chest chest = (Chest) b_l.getState();
+                                    depositID(chest, event.getVehicle(), item);
+                                } else if (b_r.getState() instanceof Chest) {
+                                    Chest chest = (Chest) b_r.getState();
+                                    depositID(chest, event.getVehicle(), item);
                                 }
                             }
-                        }
-                    } else if (color == DyeColor.CYAN.getWoolData() && (signBlock.getState() instanceof Sign)) {
-                        if (event.getVehicle().getType() != EntityType.MINECART_CHEST) {
                             return;
-                        }
-                        Sign signe = (Sign) signBlock.getState();
-                        for (String lines : signe.getLines()) {
-                            if (lines.equalsIgnoreCase("[Mottak]")) {
-                                ItemStack item = null;
-                                try {
-                                    item = this.plugin.matchItem(signe.getLines()[2]);
-                                } catch (Exception e) {
-                                    return;
-                                }
-                                Block track = to.getBlock();
-                                if (track.getData() == 0x0) {
-                                    Block b_l = track.getRelative(-2, 0, 0);
-                                    Block b_r = track.getRelative(+2, 0, 0);
-                                    if (b_l.getState() instanceof Chest) {
-                                        Chest chest = (Chest) b_l.getState();
-                                        depositID(chest, event.getVehicle(), item);
-                                    } else if (b_r.getState() instanceof Chest) {
-                                        Chest chest = (Chest) b_r.getState();
-                                        depositID(chest, event.getVehicle(), item);
-                                    }
-                                } else if (track.getData() == 0x1) {
-                                    Block b_l = track.getRelative(0, 0, +2);
-                                    Block b_r = track.getRelative(0, 0, -2);
-                                    if (b_l.getState() instanceof Chest) {
-                                        Chest chest = (Chest) b_l.getState();
-                                        depositID(chest, event.getVehicle(), item);
-                                    } else if (b_r.getState() instanceof Chest) {
-                                        Chest chest = (Chest) b_r.getState();
-                                        depositID(chest, event.getVehicle(), item);
-                                    }
-                                }
-                                return;
-                            }
                         }
                     }
                 }
@@ -311,35 +310,33 @@ public class MinecraftnoVehicleListener implements Listener {
         Block signBlock = under.getRelative(BlockFace.DOWN);
         byte color = under.getData();
 
-        if (under.getType() == Material.WOOL) {
-            if (color == DyeColor.BLACK.getWoolData() && under.isBlockIndirectlyPowered() && signBlock.getType().equals(Material.SIGN_POST)) {
-                Sign sign = (Sign) signBlock.getState();
-                for (String lines : sign.getLines()) {
-                    if (lines.equalsIgnoreCase("[Stasjon]")) {
-                        Vector speed = new Vector();
-                        speed.setX(0);
-                        speed.setZ(0);
-                        if (sign.getRawData() == 0x0) {
-                            // VEST
-                            speed.setZ(-0.6);
-                            cart.setVelocity(speed);
-                            return;
-                        } else if (sign.getRawData() == 0x4) {
-                            // NORD
-                            speed.setX(0.6);
-                            cart.setVelocity(speed);
-                            return;
-                        } else if (sign.getRawData() == 0x8) {
-                            // Øst
-                            speed.setZ(0.6);
-                            cart.setVelocity(speed);
-                            return;
-                        } else if (sign.getRawData() == 0xC) {
-                            // Sør
-                            speed.setX(-0.6);
-                            cart.setVelocity(speed);
-                            return;
-                        }
+        if (under.getType() == Material.BLACK_WOOL && under.isBlockIndirectlyPowered() && (signBlock.getState() instanceof Sign)) {
+            Sign sign = (Sign) signBlock.getState();
+            for (String lines : sign.getLines()) {
+                if (lines.equalsIgnoreCase("[Stasjon]")) {
+                    Vector speed = new Vector();
+                    speed.setX(0);
+                    speed.setZ(0);
+                    if (sign.getRawData() == 0x0) {
+                        // VEST
+                        speed.setZ(-0.6);
+                        cart.setVelocity(speed);
+                        return;
+                    } else if (sign.getRawData() == 0x4) {
+                        // NORD
+                        speed.setX(0.6);
+                        cart.setVelocity(speed);
+                        return;
+                    } else if (sign.getRawData() == 0x8) {
+                        // Øst
+                        speed.setZ(0.6);
+                        cart.setVelocity(speed);
+                        return;
+                    } else if (sign.getRawData() == 0xC) {
+                        // Sør
+                        speed.setX(-0.6);
+                        cart.setVelocity(speed);
+                        return;
                     }
                 }
             }

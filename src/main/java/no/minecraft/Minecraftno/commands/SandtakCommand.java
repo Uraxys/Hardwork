@@ -1,7 +1,9 @@
 package no.minecraft.Minecraftno.commands;
 
-import com.sk89q.worldedit.bukkit.selections.Selection;
+import com.sk89q.worldedit.IncompleteRegionException;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
 
+import com.sk89q.worldedit.regions.Region;
 import no.minecraft.Minecraftno.Minecraftno;
 import no.minecraft.Minecraftno.handlers.SandtakHandler;
 import no.minecraft.Minecraftno.handlers.WEBridge;
@@ -127,15 +129,21 @@ public class SandtakCommand extends MinecraftnoCommand {
     }
 
     private void storeChest(Player player) {
-        Selection sel = this.weBridge.getWePlugin().getSelection(player);
-        if (sel != null) {
-            if (sel.getArea() == 2) {
-                if (this.verifyChestOwner(player, sel)) {
-                    if (this.sandtakHandler.verifyValidSelection(sel)) {
-                        int materialId = this.sandtakHandler.getMaterialFromChest(sel);
+        Region region;
+        try {
+            region = this.weBridge.getWePlugin().getSession(player).getSelection(BukkitAdapter.adapt(player.getLocation().getWorld()));
+        } catch (IncompleteRegionException ignore) {
+            player.sendMessage(getErrorChatColor() + "Fant ingen markering. Du må markere dobbelkisten som du ønsker å legge til.");
+            return;
+        }
+        if (region != null) {
+            if (region.getArea() == 2) {
+                if (this.verifyChestOwner(player, region)) {
+                    if (this.sandtakHandler.verifyValidSelection(region)) {
+                        Material materialInChest = this.sandtakHandler.getMaterialFromChest(region);
 
-                        if (this.sandtakHandler.updateSandtakInventoryStatus(player.getName(), materialId)) {
-                            this.sandtakHandler.removeDoubleChest(sel);
+                        if (this.sandtakHandler.updateSandtakInventoryStatus(player.getName(), materialInChest)) {
+                            this.sandtakHandler.removeDoubleChest(region);
                             player.sendMessage(getOkChatColor() + "Din kistestatus, for bruk i sandtak, er nå oppdatert."); // include status in message?
                         } else {
                             player.sendMessage(getErrorChatColor() + "En feil oppstod under oppdatering av din kistestatus i databasen.");
@@ -193,8 +201,7 @@ public class SandtakCommand extends MinecraftnoCommand {
                 if (amountOfDk >= 0) {
                     int amount = 0;
                     Material materialId = Material.COBBLESTONE; // cobblestone, used for sand
-                    Material sandtakMaterialId = Material.SAND; // sand by default
-                    int sandtakDataId = 0;
+                    Material sandtakMaterial = Material.SAND; // sand by default
 
                     if (amountOfDk == 0) {
                         amount = this.sandtakHandler.getSandtakMap().get(realSandtakName).getSize();
@@ -205,26 +212,22 @@ public class SandtakCommand extends MinecraftnoCommand {
                     switch (type) {
                         case "snow":
                             materialId = Material.STONE;
-                            sandtakMaterialId = Material.SNOW_BLOCK;
-                            sandtakDataId = 0;
+                            sandtakMaterial = Material.SNOW_BLOCK;
                             break;
 
                         case "andesite":
                             materialId = Material.STONE;
-                            sandtakMaterialId = Material.STONE;
-                            sandtakDataId = 5;
+                            sandtakMaterial = Material.ANDESITE;
                             break;
 
                         case "diorite":
                             materialId = Material.STONE;
-                            sandtakMaterialId = Material.STONE;
-                            sandtakDataId = 3;
+                            sandtakMaterial = Material.DIORITE;
                             break;
 
                         case "granite":
                             materialId = Material.STONE;
-                            sandtakMaterialId = Material.STONE;
-                            sandtakDataId = 1;
+                            sandtakMaterial = Material.GRANITE;
                             break;
                     }
 
@@ -234,9 +237,9 @@ public class SandtakCommand extends MinecraftnoCommand {
                         int sandtakSize = this.sandtakHandler.getSandtakMap().get(realSandtakName).getSize();
                         if (amount <= sandtakSize) {
                             if (this.sandtakHandler.removeDksFromPlayerSandtakInventory(player.getName(), amount, materialId)) {
-                                this.sandtakHandler.fillSandtak(realSandtakName, amount, sandtakMaterialId, sandtakDataId);
+                                this.sandtakHandler.fillSandtak(realSandtakName, amount, sandtakMaterial);
                                 player.sendMessage(getOkChatColor() + "Sandtaket har blitt fylt opp.");
-                                this.plugin.getLogHandler().log(this.plugin.getUserHandler().getUserId(player), 0, 0, 0, realSandtakName, MinecraftnoLog.SANDTAKFILL);
+                                this.plugin.getLogHandler().log(this.plugin.getUserHandler().getUserId(player), 0, 0, null, realSandtakName, MinecraftnoLog.SANDTAKFILL);
                                 this.plugin.getIrcBot().sendMessage("#hardwork.logg", player.getName() + " fylte opp et sandtak. Navn: " + realSandtakName + ". Sandtaket ble fylt med " + amount + " dobbelkister og med materialet " + type + ".");
                             } else {
                                 player.sendMessage(getErrorChatColor() + "En feil har oppstått under kommunikasjon med databasen. Kontakt en vakt/stab dersom dette fortsetter.");
@@ -271,12 +274,18 @@ public class SandtakCommand extends MinecraftnoCommand {
         if (this.userHandler.getAccess(player) >= 4) {
             String realSandtakName = this.sandtakHandler.getSandtakName(sandtakName);
             if (realSandtakName == null) {
-                Selection sel = this.weBridge.getWePlugin().getSelection(player);
-                if (sel != null) {
-                    if (this.verifySelectionArea(sel)) {
-                        if (this.sandtakHandler.addSandtak(sandtakName, sel.getMaximumPoint(), sel.getMinimumPoint())) {
+                Region region;
+                try {
+                    region = this.weBridge.getWePlugin().getSession(player).getSelection(BukkitAdapter.adapt(player.getLocation().getWorld()));
+                } catch (IncompleteRegionException ignore) {
+                    player.sendMessage(getErrorChatColor() + "Du må markere sandtaket som du ønsker å lagre først.");
+                    return;
+                }
+                if (region != null) {
+                    if (this.verifySelectionArea(region)) {
+                        if (this.sandtakHandler.addSandtak(sandtakName, BukkitAdapter.adapt(player.getLocation().getWorld(), region.getMaximumPoint()), BukkitAdapter.adapt(player.getLocation().getWorld(), region.getMinimumPoint()))) {
                             player.sendMessage(getOkChatColor() + "Sandtaket har blitt opprettet.");
-                            this.plugin.getLogHandler().log(this.plugin.getUserHandler().getUserId(player), 0, 0, 0, sandtakName, MinecraftnoLog.SANDTAKNEW);
+                            this.plugin.getLogHandler().log(this.plugin.getUserHandler().getUserId(player), 0, 0, null, sandtakName, MinecraftnoLog.SANDTAKNEW);
                             this.plugin.getIrcBot().sendMessage("#hardwork.logg", player.getName() + " la til et nytt sandtak. Navn: " + realSandtakName + ".");
                         } else {
                             player.sendMessage(getErrorChatColor() + "En feil oppstod noe som førte til at sandtaket ikke ble opprettet.");
@@ -307,7 +316,7 @@ public class SandtakCommand extends MinecraftnoCommand {
             if (realSandtakName != null) {
                 if (this.sandtakHandler.deleteSandtak(sandtakName)) {
                     player.sendMessage(getOkChatColor() + "Sandtaket har blitt fjernet.");
-                    this.plugin.getLogHandler().log(this.plugin.getUserHandler().getUserId(player), 0, 0, 0, realSandtakName, MinecraftnoLog.SANDTAKDELETE);
+                    this.plugin.getLogHandler().log(this.plugin.getUserHandler().getUserId(player), 0, 0, null, realSandtakName, MinecraftnoLog.SANDTAKDELETE);
                     this.plugin.getIrcBot().sendMessage("#hardwork.logg", player.getName() + " fjernet sandtaket ved navn " + realSandtakName + ".");
                 } else {
                     player.sendMessage(getErrorChatColor() + "En feil oppstod under sletting av sandtaket.");
@@ -329,7 +338,7 @@ public class SandtakCommand extends MinecraftnoCommand {
      *
      * @return true if the selected area can contain x amounts of double chests and false otherwise
      */
-    private boolean verifySelectionArea(Selection sel) {
+    private boolean verifySelectionArea(Region sel) {
         double result = (double) sel.getArea() / 3456;
 
         return result == Math.floor(result) && !Double.isInfinite(result) && result > 0;
@@ -339,13 +348,13 @@ public class SandtakCommand extends MinecraftnoCommand {
      * Checks if the player owns the chest
      *
      * @param player Player to check
-     * @param sel    Selection being checked (two points)
+     * @param sel    Region being checked (two points)
      *
      * @return True if players is the owner, false otherwise.
      */
-    private boolean verifyChestOwner(Player player, Selection sel) {
-        String owner = this.blockInfoHandler.getOwner(sel.getMaximumPoint());
-        String owner2 = this.blockInfoHandler.getOwner(sel.getMinimumPoint());
+    private boolean verifyChestOwner(Player player, Region sel) {
+        String owner = this.blockInfoHandler.getOwner(BukkitAdapter.adapt(BukkitAdapter.adapt(sel.getWorld()), sel.getMaximumPoint()));
+        String owner2 = this.blockInfoHandler.getOwner(BukkitAdapter.adapt(BukkitAdapter.adapt(sel.getWorld()), sel.getMinimumPoint()));
 
         if (owner.equalsIgnoreCase(owner2)) {
             if (owner.equalsIgnoreCase(player.getName())) {

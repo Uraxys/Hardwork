@@ -88,7 +88,7 @@ public class BlockHandler extends TimerTask {
      */
 
     public void setBlocklog(int playerId, Block block, BlockLogReason reason) {
-        setBlocklog(playerId, block.getLocation(), block.getTypeId(), reason);
+        setBlocklog(playerId, block.getLocation(), block.getType().name(), reason);
     }
 
     /**
@@ -97,9 +97,9 @@ public class BlockHandler extends TimerTask {
      * @param Int, Location
      */
 
-    public void setBlocklog(int playerId, Location l, int blockId, BlockLogReason reason) {
+    public void setBlocklog(int playerId, Location l, String material, BlockLogReason reason) {
         String statment = ("INSERT INTO `blocklog` (`id`, `userid`, `action`, `x`, `y`, `z`, `world`, `material`, `time`) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP());");
-        BlockData lbd = new BlockData(0, statment, playerId, blockId, l.getBlockX(), l.getBlockY(), l.getBlockZ(), l.getWorld().getName(), reason.toString());
+        BlockData lbd = new BlockData(0, statment, playerId, material, l.getBlockX(), l.getBlockY(), l.getBlockZ(), l.getWorld().getName(), reason.toString());
         getblockdata.add(lbd);
     }
 
@@ -145,7 +145,7 @@ public class BlockHandler extends TimerTask {
                         setLog.setShort(4, (short) lbd.getBlockY());
                         setLog.setShort(5, (short) lbd.getBlockZ());
                         setLog.setString(6, lbd.getWorld());
-                        setLog.setShort(7, (short) lbd.getBlockTypeId());
+                        setLog.setString(7, lbd.getBlockType());
                         setLog.executeUpdate();
                     } else if (lbd.getType() == 1) {
                         setLog = conn.prepareStatement(lbd.getStatment());

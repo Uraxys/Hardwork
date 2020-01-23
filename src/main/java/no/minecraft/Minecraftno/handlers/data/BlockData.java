@@ -5,18 +5,18 @@ public class BlockData {
     private int type;
     private String statment;
     private int playerId;
-    private int blockTypeId;
+    private String blockType;
     private int blockX;
     private int blockY;
     private int blockZ;
     private String world;
     private String blocklogreason;
 
-    public BlockData(int type, String Statment, int playerId, int blockTypeId, int blockX, int blockY, int blockZ, String world, String blocklogreason) {
+    public BlockData(int type, String Statment, int playerId, String blockType, int blockX, int blockY, int blockZ, String world, String blocklogreason) {
         this.type = type;
         this.statment = Statment;
         this.playerId = playerId;
-        this.blockTypeId = blockTypeId;
+        this.blockType = blockType;
         this.blockX = blockX;
         this.blockY = blockY;
         this.blockZ = blockZ;
@@ -36,8 +36,8 @@ public class BlockData {
         return this.playerId;
     }
 
-    public int getBlockTypeId() {
-        return this.blockTypeId;
+    public String getBlockType() {
+        return this.blockType;
     }
 
     public int getBlockX() {

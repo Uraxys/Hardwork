@@ -19,6 +19,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.world.StructureGrowEvent;
+import org.bukkit.inventory.meta.Damageable;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -56,7 +57,7 @@ public class MinecraftnoEntityListener implements Listener {
         if (blocks.size() >= 1) {
             if (blocks.get(0).getBlock() instanceof Block) {
                 Block bottomBlock = blocks.get(0).getBlock();
-                if (bottomBlock.getType() == Material.LOG) {
+                if (bottomBlock.getType().name().endsWith("_LOG") && !bottomBlock.getType().name().contains("STRIPPED")) {
                     this.blockHandler.deleteBlockProtection(bottomBlock);
                 }
             }
@@ -357,6 +358,58 @@ public class MinecraftnoEntityListener implements Listener {
             event.setCancelled(true);
         } else if (type == EntityType.MAGMA_CUBE && !wcfg.magmaCube) {
             event.setCancelled(true);
+        } else if (type == EntityType.PUFFERFISH && !wcfg.pufferfish) {
+            event.setCancelled(true);
+        } else if (type == EntityType.SALMON && !wcfg.salmon) {
+            event.setCancelled(true);
+        } else if (type == EntityType.TROPICAL_FISH && !wcfg.tropical_fish) {
+            event.setCancelled(true);
+        } else if (type == EntityType.TURTLE && !wcfg.turtle) {
+            event.setCancelled(true);
+        } else if (type == EntityType.COD && !wcfg.cod) {
+            event.setCancelled(true);
+        } else if (type == EntityType.DOLPHIN && !wcfg.dolphin) {
+            event.setCancelled(true);
+        } else if (type == EntityType.ZOMBIE_VILLAGER && !wcfg.zombie_villager) {
+            event.setCancelled(true);
+        } else if (type == EntityType.PHANTOM && !wcfg.phantom) {
+            event.setCancelled(true);
+        } else if (type == EntityType.DROWNED && !wcfg.drowned) {
+            event.setCancelled(true);
+        } else if (type == EntityType.PILLAGER && !wcfg.pillager) {
+            event.setCancelled(true);
+        } else if (type == EntityType.SHULKER && !wcfg.shulker) {
+            event.setCancelled(true);
+        } else if (type == EntityType.SHULKER_BULLET && !wcfg.shulker_bullet) {
+            event.setCancelled(true);
+        } else if (type == EntityType.STRAY && !wcfg.stray) {
+            event.setCancelled(true);
+        } else if (type == EntityType.VEX && !wcfg.vex) {
+            event.setCancelled(true);
+        } else if (type == EntityType.VINDICATOR && !wcfg.vindicator) {
+            event.setCancelled(true);
+        } else if (type == EntityType.EVOKER && !wcfg.evoker) {
+            event.setCancelled(true);
+        } else if (type == EntityType.ENDERMITE && !wcfg.endermite) {
+            event.setCancelled(true);
+        } else if (type == EntityType.RAVAGER && !wcfg.ravager) {
+            event.setCancelled(true);
+        } else if (type == EntityType.HUSK && !wcfg.husk) {
+            event.setCancelled(true);
+        } else if (type == EntityType.PARROT && !wcfg.parrot) {
+            event.setCancelled(true);
+        } else if (type == EntityType.POLAR_BEAR && !wcfg.polar_bear) {
+            event.setCancelled(true);
+        } else if (type == EntityType.TRADER_LLAMA && !wcfg.trader_llama) {
+            event.setCancelled(true);
+        } else if (type == EntityType.WANDERING_TRADER && !wcfg.wandering_trader) {
+            event.setCancelled(true);
+        } else if (type == EntityType.BEE && !wcfg.bee) {
+            event.setCancelled(true);
+        } else if (type == EntityType.FOX && !wcfg.fox) {
+            event.setCancelled(true);
+        } else if (type == EntityType.PANDA && !wcfg.panda) {
+            event.setCancelled(true);
         }
     }
 
@@ -367,7 +420,7 @@ public class MinecraftnoEntityListener implements Listener {
             ConfigurationServer cfg = this.plugin.getGlobalConfiguration();
             ConfigurationWorld wcfg = cfg.get(player.getWorld());
             if (!wcfg.itemDurability) {
-                if (cfg.noDamageTools.contains(event.getBow().getTypeId())) {
+                if (cfg.noDamageTools.contains(event.getBow().getType())) {
                     if (event.getBow().getDurability() >= 20) {
                         event.getBow().setDurability((short) -200);
                     }

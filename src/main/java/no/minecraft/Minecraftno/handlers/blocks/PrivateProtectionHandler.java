@@ -45,8 +45,8 @@ public class PrivateProtectionHandler {
                 Material.JUNGLE_DOOR,
                 Material.DARK_OAK_DOOR,
                 Material.ACACIA_DOOR,
-                Material.WOODEN_DOOR,
-                Material.IRON_DOOR_BLOCK,
+                Material.OAK_DOOR,
+                Material.IRON_DOOR,
 
                 // Chest
                 Material.CHEST

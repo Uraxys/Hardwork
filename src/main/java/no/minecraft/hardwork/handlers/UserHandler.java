@@ -707,14 +707,14 @@ public class UserHandler implements Handler, DataConsumer {
 
         User user = getUser(player.getUniqueId());
 
-        pinv.setItem(0, new ItemStack(Material.WATCH, 1));
+        pinv.setItem(0, new ItemStack(Material.CLOCK, 1));
         pinv.setItem(7, new ItemStack(Material.SPONGE, 1));
 
         if (user.getAccessLevel() > 2) {
             pinv.setItem(1, new ItemStack(Material.COMPASS, 1));
             pinv.setItem(2, new ItemStack(Material.STICK, 1));
             pinv.setItem(3, new ItemStack(Material.BOOK, 1));
-            pinv.setItem(4, new ItemStack(Material.WOOD_AXE, 1));
+            pinv.setItem(4, new ItemStack(Material.WOODEN_AXE, 1));
             pinv.setItem(5, new ItemStack(Material.SLIME_BALL, 1));
             pinv.setItem(6, new ItemStack(Material.PAPER, 1));
             pinv.setItem(8, new ItemStack(Material.BEDROCK, -1));

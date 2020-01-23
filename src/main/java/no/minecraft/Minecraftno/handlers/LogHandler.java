@@ -19,7 +19,7 @@ public class LogHandler {
         this.sqlHandler = instance.getSqlHandler();
     }
 
-    public boolean log(int player, int victim, int amount, int itemid, String data, MinecraftnoLog type) {
+    public boolean log(int player, int victim, int amount, String materialName, String data, MinecraftnoLog type) {
         Connection conn = null;
         PreparedStatement ps = null;
         try {
@@ -33,7 +33,7 @@ public class LogHandler {
                             ps.setInt(2, player);
                             ps.setInt(3, victim);
                             ps.setNull(4, Types.SMALLINT);
-                            ps.setNull(5, Types.SMALLINT);
+                            ps.setNull(5, Types.VARCHAR);
                             ps.setString(6, data);
                             ps.setString(7, "BAN");
                             ps.executeUpdate();
@@ -51,7 +51,7 @@ public class LogHandler {
                             ps.setInt(2, player);
                             ps.setInt(3, victim);
                             ps.setNull(4, Types.SMALLINT);
-                            ps.setNull(5, Types.SMALLINT);
+                            ps.setNull(5, Types.VARCHAR);
                             ps.setNull(6, Types.VARCHAR);
                             ps.setString(7, "UNBAN");
                         } catch (SQLException ex) {
@@ -68,7 +68,7 @@ public class LogHandler {
                             ps.setInt(2, player);
                             ps.setNull(3, Types.INTEGER);
                             ps.setInt(4, amount);
-                            ps.setNull(5, Types.SMALLINT);
+                            ps.setNull(5, Types.VARCHAR);
                             ps.setNull(6, Types.VARCHAR);
                             ps.setString(7, "BANKINN");
                             ps.executeUpdate();
@@ -86,7 +86,7 @@ public class LogHandler {
                             ps.setInt(2, player);
                             ps.setNull(3, Types.INTEGER);
                             ps.setInt(4, amount);
-                            ps.setNull(5, Types.SMALLINT);
+                            ps.setNull(5, Types.VARCHAR);
                             ps.setNull(6, Types.VARCHAR);
                             ps.setString(7, "BANKUT");
                             ps.executeUpdate();
@@ -104,7 +104,7 @@ public class LogHandler {
                             ps.setInt(2, player);
                             ps.setInt(3, victim);
                             ps.setInt(4, amount);
-                            ps.setNull(5, Types.SMALLINT);
+                            ps.setNull(5, Types.VARCHAR);
                             ps.setNull(6, Types.VARCHAR);
                             ps.setString(7, "BANKTRANSFER");
                             ps.executeUpdate();
@@ -144,7 +144,7 @@ public class LogHandler {
                             ps.setInt(2, player);
                             ps.setNull(3, Types.INTEGER);
                             ps.setNull(4, Types.SMALLINT);
-                            ps.setNull(5, Types.SMALLINT);
+                            ps.setNull(5, Types.VARCHAR);
                             ps.setString(6, data);
                             ps.setString(7, "DELWARP");
                             ps.executeUpdate();
@@ -156,13 +156,13 @@ public class LogHandler {
                         break;
                     }
                 case GIVE:
-                    if ((player != -1) && (itemid != 0) && (amount >= 0)) {
+                    if ((player != -1) && !materialName.equalsIgnoreCase("AIR") && (amount >= 0)) {
                         try {
                             ps.setNull(1, Types.INTEGER);
                             ps.setInt(2, player);
                             ps.setNull(3, Types.INTEGER);
                             ps.setInt(4, amount);
-                            ps.setInt(5, itemid);
+                            ps.setString(5, materialName);
                             ps.setNull(6, Types.VARCHAR);
                             ps.setString(7, "GIVE");
                             ps.executeUpdate();
@@ -170,7 +170,7 @@ public class LogHandler {
                             System.out.println("Error: " + ex);
                             return false;
                         }
-                        this.plugin.getIrcBot().sendMessage("#hardwork.logg", plugin.getUserHandler().getNameFromId(player) + " spawnet " + amount + "x" + Material.getMaterial(itemid).toString() + ".");
+                        this.plugin.getIrcBot().sendMessage("#hardwork.logg", plugin.getUserHandler().getNameFromId(player) + " spawnet " + amount + "x" + Material.getMaterial(materialName).toString() + ".");
                         break;
                     }
                 case KICK:
@@ -180,7 +180,7 @@ public class LogHandler {
                             ps.setInt(2, player);
                             ps.setInt(3, victim);
                             ps.setNull(4, Types.SMALLINT);
-                            ps.setNull(5, Types.SMALLINT);
+                            ps.setNull(5, Types.VARCHAR);
                             ps.setString(6, data);
                             ps.setString(7, "KICK");
                             ps.executeUpdate();
@@ -208,7 +208,7 @@ public class LogHandler {
                             ps.setNull(3, Types.INTEGER);
                             ps.setNull(4, Types.INTEGER);
                             ps.setNull(4, Types.SMALLINT);
-                            ps.setNull(5, Types.SMALLINT);
+                            ps.setNull(5, Types.VARCHAR);
                             ps.setString(6, data);
                             ps.setString(7, "SETWARP");
                             ps.executeUpdate();
@@ -227,7 +227,7 @@ public class LogHandler {
                             ps.setNull(3, Types.INTEGER);
                             ps.setNull(4, Types.INTEGER);
                             ps.setInt(4, amount);
-                            ps.setInt(5, itemid);
+                            ps.setString(5, materialName);
                             ps.setString(6, data);
                             ps.setString(7, "PURCHASE");
                             ps.executeUpdate();
@@ -246,7 +246,7 @@ public class LogHandler {
                             ps.setNull(3, Types.INTEGER);
                             ps.setNull(4, Types.INTEGER);
                             ps.setNull(4, Types.SMALLINT);
-                            ps.setInt(5, itemid);
+                            ps.setString(5, materialName);
                             ps.setNull(6, Types.VARCHAR);
                             ps.setString(7, "ILLEGAL");
                             ps.executeUpdate();
@@ -263,7 +263,7 @@ public class LogHandler {
                             ps.setInt(2, player);
                             ps.setInt(3, victim);
                             ps.setNull(4, Types.SMALLINT);
-                            ps.setNull(5, Types.SMALLINT);
+                            ps.setNull(5, Types.VARCHAR);
                             ps.setString(6, data);
                             ps.setString(7, "WEEKBAN");
                             ps.executeUpdate();
@@ -287,7 +287,7 @@ public class LogHandler {
                             ps.setInt(2, player);
                             ps.setNull(3, Types.INTEGER);
                             ps.setNull(4, Types.SMALLINT);
-                            ps.setNull(5, Types.SMALLINT);
+                            ps.setNull(5, Types.VARCHAR);
                             ps.setString(6, data);
                             ps.setString(7, "SANDTAKFILL");
                             ps.executeUpdate();
@@ -304,7 +304,7 @@ public class LogHandler {
                             ps.setInt(2, player);
                             ps.setNull(3, Types.INTEGER);
                             ps.setNull(4, Types.SMALLINT);
-                            ps.setNull(5, Types.SMALLINT);
+                            ps.setNull(5, Types.VARCHAR);
                             ps.setString(6, data);
                             ps.setString(7, "SANDTAKNEW");
                             ps.executeUpdate();
@@ -321,7 +321,7 @@ public class LogHandler {
                             ps.setInt(2, player);
                             ps.setNull(3, Types.INTEGER);
                             ps.setNull(4, Types.SMALLINT);
-                            ps.setNull(5, Types.SMALLINT);
+                            ps.setNull(5, Types.VARCHAR);
                             ps.setString(6, data);
                             ps.setString(7, "SANDTAKFILL");
                             ps.executeUpdate();

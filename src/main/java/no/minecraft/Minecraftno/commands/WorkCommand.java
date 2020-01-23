@@ -45,14 +45,14 @@ public class WorkCommand extends MinecraftnoCommand {
             if (this.storeInventory(player)) {
                 player.getInventory().clear();
 
-                player.getInventory().setItem(0, new ItemStack(Material.WATCH, 1));
+                player.getInventory().setItem(0, new ItemStack(Material.CLOCK, 1));
                 player.getInventory().setItem(7, new ItemStack(Material.SPONGE, 1));
 
                 if (this.userHandler.getAccess(player) > 2) {
                     player.getInventory().setItem(1, new ItemStack(Material.COMPASS, 1));
                     player.getInventory().setItem(2, new ItemStack(Material.STICK, 1));
                     player.getInventory().setItem(3, new ItemStack(Material.BOOK, 1));
-                    player.getInventory().setItem(4, new ItemStack(Material.WOOD_AXE, 1));
+                    player.getInventory().setItem(4, new ItemStack(Material.WOODEN_AXE, 1));
                     player.getInventory().setItem(5, new ItemStack(Material.SLIME_BALL, 1));
                     player.getInventory().setItem(6, new ItemStack(Material.PAPER, 1));
                     player.getInventory().setItem(8, new ItemStack(Material.BEDROCK, -1));

@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import no.minecraft.Minecraftno.Minecraftno;
+import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -49,9 +51,10 @@ public class HultbergItemStack implements Serializable {
             return null;
         } else {
             // Support legacy
-            ItemStack r = new ItemStack(this.itemId);
+            Material mat = Minecraftno.convertMaterial(this.itemId, this.data); // Support 1.8.8 & <
+            if (mat == null) return null;
+            ItemStack r = new ItemStack(mat);
             r.setDurability(this.durability);
-            r.setData(new MaterialData(this.data));
             r.setAmount(this.amount);
             if (this.meta != null && !this.meta.isEmpty()) {
                 r.setItemMeta((ItemMeta) ConfigurationSerialization.deserializeObject(this.meta, ConfigurationSerialization.getClassByAlias("ItemMeta")));

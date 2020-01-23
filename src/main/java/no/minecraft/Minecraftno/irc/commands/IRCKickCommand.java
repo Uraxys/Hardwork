@@ -68,7 +68,7 @@ public class IRCKickCommand implements IRCBotCommand {
 
         // Kick og logg.
         kick.kickPlayer(msg);
-        this.logHandler.log(this.userHandler.getUserId(user.getNick()), this.userHandler.getUserId(kick), 0, 0, msg, MinecraftnoLog.KICK);
+        this.logHandler.log(this.userHandler.getUserId(user.getNick()), this.userHandler.getUserId(kick), 0, null, msg, MinecraftnoLog.KICK);
 
         // La spillerne in-game få vite hva som skjer.
         this.plugin.getServer().broadcastMessage(

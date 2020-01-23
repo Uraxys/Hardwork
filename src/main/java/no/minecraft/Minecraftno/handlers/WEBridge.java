@@ -1,35 +1,41 @@
 package no.minecraft.Minecraftno.handlers;
 
-import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
-import com.sk89q.worldedit.bukkit.selections.Selection;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.regions.Region;
 import no.minecraft.Minecraftno.Minecraftno;
 import no.minecraft.Minecraftno.handlers.enums.BlockLogReason;
 import no.minecraft.Minecraftno.handlers.player.MessageTask;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class WEBridge {
     private Minecraftno plugin;
     private WorldEditPlugin wePlugin;
-    private static ArrayList<Integer> nonBlocks = new ArrayList<Integer>(Arrays.asList(0, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 39, 40, 51, 59, 60, 83, 141, 142, 355));
+    private static ArrayList<Material> nonBlocks = new ArrayList<>(Arrays.asList(
+            Material.AIR, Material.GRASS_BLOCK, Material.DIRT, Material.PODZOL, Material.COARSE_DIRT, Material.BEDROCK,
+            Material.WATER, Material.LAVA, Material.SAND, Material.RED_SAND, Material.GRAVEL, Material.BROWN_MUSHROOM,
+            Material.RED_MUSHROOM, Material.FIRE, Material.WHEAT, Material.FARMLAND, Material.SUGAR_CANE, Material.CARROTS,
+            Material.POTATO)
+    );
 
     public WEBridge(Minecraftno plugin) {
         this.plugin = plugin;
+        // Add all the beds & saplings to the nonBlocks list.
+        nonBlocks.addAll(Arrays.stream(Material.values()).filter(m -> (m.name().endsWith("_BED") || m.name().endsWith("_SAPLING"))).collect(Collectors.toList()));
     }
 
     public boolean initialise() {
         this.wePlugin = (WorldEditPlugin) this.plugin.getServer().getPluginManager().getPlugin("WorldEdit");
-
         if (this.wePlugin == null) {
             this.plugin.getLogger().severe("Could not find WorldEdit!");
             return false;
@@ -46,29 +52,29 @@ public class WEBridge {
         return this.wePlugin;
     }
 
-    public void setArea(Selection sel, int playerID, int newOwnerID, int changeId, Set<Integer> ids) {
-        this.plugin.getServer().getScheduler().runTaskAsynchronously(this.plugin, new AreaProtecter(sel, playerID, newOwnerID, changeId, ids, plugin));
+    public void setArea(Region sel, int playerID, int newOwnerID, int changeId, Set<Material> materials) {
+        this.plugin.getServer().getScheduler().runTaskAsynchronously(this.plugin, new AreaProtecter(sel, playerID, newOwnerID, changeId, materials, plugin));
     }
 
     protected class AreaProtecter implements Runnable {
         protected Connection conn;
-        protected Vector maxPoint;
-        protected Vector minPoint;
+        protected BlockVector3 maxPoint;
+        protected BlockVector3 minPoint;
         protected int playerID;
         protected World worldName;
         protected int newOwnerID;
         protected int changeId;
-        protected Set<Integer> BlockID;
+        protected Set<Material> materials;
 
-        public AreaProtecter(Selection sel, int playerID, int newOwnerID, int changeId, Set<Integer> BlockID, Minecraftno instance) {
+        public AreaProtecter(Region sel, int playerID, int newOwnerID, int changeId, Set<Material> materials, Minecraftno instance) {
             this.conn = instance.getConnection();
-            this.maxPoint = new Vector(sel.getNativeMaximumPoint());
-            this.minPoint = new Vector(sel.getNativeMinimumPoint());
+            this.maxPoint = sel.getMaximumPoint();
+            this.minPoint = sel.getMinimumPoint();
             this.playerID = playerID;
-            this.worldName = sel.getWorld();
+            this.worldName = BukkitAdapter.asBukkitWorld(sel.getWorld()).getWorld();
             this.newOwnerID = newOwnerID;
             this.changeId = changeId;
-            this.BlockID = BlockID;
+            this.materials = materials;
         }
 
         @Override
@@ -100,7 +106,7 @@ public class WEBridge {
                 }
                 logPS.setString(6, this.worldName.getName());
 
-                runOnSelection(this.minPoint, this.maxPoint, this.worldName, ps, logPS, BlockID);
+                runOnSelection(this.minPoint, this.maxPoint, this.worldName, ps, logPS, materials);
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {
@@ -123,7 +129,7 @@ public class WEBridge {
         }
     }
 
-    private static boolean runOnSelection(Vector min, Vector max, World worldname, PreparedStatement ps, PreparedStatement ps2, Set<Integer> BlockID) throws SQLException {
+    private static boolean runOnSelection(BlockVector3 min, BlockVector3 max, World worldname, PreparedStatement ps, PreparedStatement ps2, Set<Material> materials) throws SQLException {
         int fromX = min.getBlockX();
         int toX = max.getBlockX();
 
@@ -138,8 +144,8 @@ public class WEBridge {
                 for (int z = fromZ; z <= toZ; ++z) {
                     Location loc = new Location(worldname, x, y, z);
 
-                    if (BlockID == null) {
-                        if (!nonBlocks.contains(Bukkit.getServer().getWorld(worldname.getName()).getBlockAt(loc).getTypeId())) {
+                    if (materials == null) {
+                        if (!nonBlocks.contains(Bukkit.getServer().getWorld(worldname.getName()).getBlockAt(loc).getType())) {
                             ps.setInt(1, x);
                             ps.setInt(2, y);
                             ps.setInt(3, z);
@@ -148,12 +154,12 @@ public class WEBridge {
                             ps2.setInt(3, x);
                             ps2.setInt(4, y);
                             ps2.setInt(5, z);
-                            ps2.setInt(7, loc.getBlock().getTypeId());
+                            ps2.setString(7, loc.getBlock().getType().name());
                             ps2.executeUpdate();
                         }
                     } else {
-                        for (Integer id : BlockID) {
-                            if (Bukkit.getServer().getWorld(worldname.getName()).getBlockAt(loc).getTypeId() == id) {
+                        for (Material mat : materials) {
+                            if (Bukkit.getServer().getWorld(worldname.getName()).getBlockAt(loc).getType() == mat) {
                                 ps.setInt(1, x);
                                 ps.setInt(2, y);
                                 ps.setInt(3, z);
@@ -162,7 +168,7 @@ public class WEBridge {
                                 ps2.setInt(3, x);
                                 ps2.setInt(4, y);
                                 ps2.setInt(5, z);
-                                ps2.setInt(7, loc.getBlock().getTypeId());
+                                ps2.setString(7, mat.name()); // Using 'mat' instead of loc.getBlock().getType() to not call getBlockAt again.
                                 ps2.executeUpdate();
                             }
                         }

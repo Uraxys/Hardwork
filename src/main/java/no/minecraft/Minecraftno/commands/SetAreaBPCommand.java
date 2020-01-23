@@ -1,9 +1,12 @@
 package no.minecraft.Minecraftno.commands;
 
-import com.sk89q.worldedit.bukkit.selections.Selection;
+import com.sk89q.worldedit.IncompleteRegionException;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.regions.Region;
 import no.minecraft.Minecraftno.Minecraftno;
 import no.minecraft.Minecraftno.handlers.WEBridge;
 import no.minecraft.Minecraftno.handlers.player.UserHandler;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.entity.Player;
 
@@ -24,16 +27,22 @@ public class SetAreaBPCommand extends MinecraftnoCommand {
 
     @Override
     public final boolean onPlayerCommand(Player player, Command command, String label, String[] args) {
-        Selection sel = this.weBridge.getWePlugin().getSelection(player);
-        if (sel == null) {
+        Region region;
+        try {
+            region = this.weBridge.getWePlugin().getSession(player).getSelection(BukkitAdapter.adapt(player.getLocation().getWorld()));
+        } catch (IncompleteRegionException ignore) {
             player.sendMessage(getErrorChatColor() + "Du har ikke valgt et område.");
             return true;
         }
-        if (sel.getArea() > maxSelection) {
-            player.sendMessage(getErrorChatColor() + "Kan ikke beskytte mer enn " + maxSelection + " blokker om gangen. Du prøvde å beskytte: " + getVarChatColor() + sel.getArea());
+        if (region == null) {
+            player.sendMessage(getErrorChatColor() + "Du har ikke valgt et område.");
             return true;
         }
-        player.sendMessage(getOkChatColor() + "Prøver å beskytte område: " + getVarChatColor() + sel.getNativeMaximumPoint().toString() + "  " + sel.getNativeMinimumPoint().toString());
+        if (region.getArea() > maxSelection) {
+            player.sendMessage(getErrorChatColor() + "Kan ikke beskytte mer enn " + maxSelection + " blokker om gangen. Du prøvde å beskytte: " + getVarChatColor() + region.getArea());
+            return true;
+        }
+        player.sendMessage(getOkChatColor() + "Prøver å beskytte område: " + getVarChatColor() + region.getMaximumPoint().toString() + "  " + region.getMinimumPoint().toString());
         // printSelection(sel,player);
         String newOwner = UserHandler.SERVER_USERNAME;
         if (args.length > 0) {
@@ -44,35 +53,33 @@ public class SetAreaBPCommand extends MinecraftnoCommand {
                 return true;
             }
             if (args.length > 1) {
-                Set<Integer> ids = getId(args[1]);
-                if (ids == null) {
+                Set<Material> materials = getId(args[1]);
+                if (materials == null) {
                     player.sendMessage(getErrorChatColor() + "'" + args[1] + "' er ikke et tall!");
                     return false;
                 }
-                for (Integer id : ids) {
-                    if (id == 0) {
+                for (Material m : materials) {
+                    if (m == Material.AIR) {
                         player.sendMessage(getErrorChatColor() + "Luft kan ikke bli beskyttet.");
                         return false;
                     }
                 }
-                this.weBridge.setArea(sel, this.userHandler.getUserId(player), this.userHandler.getUserId(newOwner), 0, ids);
+                this.weBridge.setArea(region, this.userHandler.getUserId(player), this.userHandler.getUserId(newOwner), 0, materials);
                 return true;
             }
         }
-        this.weBridge.setArea(sel, this.userHandler.getUserId(player), this.userHandler.getUserId(newOwner), 0, null);
+        this.weBridge.setArea(region, this.userHandler.getUserId(player), this.userHandler.getUserId(newOwner), 0, null);
         return true;
     }
 
-    public Set<Integer> getId(String list) {
+    public Set<Material> getId(String list) {
         String[] items = list.split(",");
-        Set<Integer> getId = new HashSet<Integer>();
+        Set<Material> mats = new HashSet<>();
         for (String id : items) {
-            try {
-                getId.add(Integer.parseInt(id));
-            } catch (NumberFormatException ex) {
-                return null;
-            }
+            Material mat = Material.getMaterial(id.toUpperCase());
+            if (mat == null) continue;
+            mats.add(mat);
         }
-        return getId;
+        return mats;
     }
 }
