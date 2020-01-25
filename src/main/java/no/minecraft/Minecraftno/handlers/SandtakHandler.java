@@ -197,7 +197,6 @@ public class SandtakHandler {
      *
      * @return quantitiy of double chests in inventory, or -1 on failure
      */
-    @SuppressWarnings("deprecation")
     public int getSandtakInventoryStatus(String playerName, Material material) {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -206,7 +205,7 @@ public class SandtakHandler {
             conn = this.plugin.getConnection();
             ps = conn.prepareStatement("SELECT `doublechestQuantity` FROM `sandtak_inventory` WHERE userid" + "= (SELECT `id` FROM Minecraftno.users WHERE name = ?) AND material = ?");
             ps.setString(1, playerName);
-            ps.setInt(2, material.getId());
+            ps.setInt(2, this.getSandtakMaterialID(material));
             rs = ps.executeQuery();
             if (rs.next()) {
                 return rs.getInt(1);
@@ -287,7 +286,6 @@ public class SandtakHandler {
      *
      * @return True on success, false otherwise
      */
-    @SuppressWarnings("deprecation")
     public boolean removeDksFromPlayerSandtakInventory(String playerName, int amountOfDk, Material material) {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -296,7 +294,7 @@ public class SandtakHandler {
             ps = conn.prepareStatement("UPDATE `sandtak_inventory` SET `doublechestQuantity` = (`doublechestQuantity` - ?)" + "WHERE `userid` = (SELECT `id` FROM Minecraftno.users WHERE `name` = ?) AND `material` = ?");
             ps.setInt(1, amountOfDk);
             ps.setString(2, playerName);
-            ps.setInt(3, material.getId());
+            ps.setInt(3, this.getSandtakMaterialID(material));
             ps.executeUpdate();
             return true;
         } catch (SQLException e) {
