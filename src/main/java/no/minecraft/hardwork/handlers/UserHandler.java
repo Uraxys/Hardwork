@@ -86,8 +86,8 @@ public class UserHandler implements Handler, DataConsumer {
         Scoreboard scoreboard = this.hardwork.getPlugin().getServer().getScoreboardManager().getMainScoreboard();
 
         for (Team team : scoreboard.getTeams()) {
-            for (OfflinePlayer player : team.getPlayers()) {
-                team.removePlayer(player);
+            for (String entry : team.getEntries()) {
+                team.removeEntry(entry);
             }
         }
     }
@@ -596,10 +596,10 @@ public class UserHandler implements Handler, DataConsumer {
 
         Scoreboard scoreboard = this.hardwork.getPlugin().getServer().getScoreboardManager().getMainScoreboard();
 
-        Team team = scoreboard.getPlayerTeam(player);
+        Team team = scoreboard.getEntryTeam(player.getName());
 
         if (team != null) {
-            team.removePlayer(player);
+            team.removeEntry(player.getName());
         }
 
         if (prefix.length() > 0) {
@@ -608,9 +608,13 @@ public class UserHandler implements Handler, DataConsumer {
             if (team == null) {
                 team = scoreboard.registerNewTeam(prefix);
                 team.setPrefix(color + "[" + prefix + "] ");
+                if (color != null) team.setColor(color);
+            } else {
+                team.setPrefix(color + "[" + prefix + "] ");
+                if (color != null) team.setColor(color);
             }
 
-            team.addPlayer(player);
+            team.addEntry(player.getName());
         }
     }
 

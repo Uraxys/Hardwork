@@ -42,7 +42,7 @@ public class MountCommand extends MinecraftnoCommand {
                 }
                 
                 player.performCommand("inv on");
-                target.setPassenger(player);
+                target.addPassenger(player);
             }
         } else if (args.length == 0) {
             player.eject();

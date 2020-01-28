@@ -29,7 +29,7 @@ public class SpawnCommand extends MinecraftnoCommand {
             if (this.userHandler.isRegPlayer(player)) {
                 this.userHandler.removeRegPlayer(player);
                 for (Player target : this.plugin.getServer().getOnlinePlayers()) {
-                    target.showPlayer(player);
+                    target.showPlayer(plugin, player);
                 }
             }
             return true;

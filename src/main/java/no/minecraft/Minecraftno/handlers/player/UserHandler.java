@@ -6,9 +6,9 @@ import no.minecraft.Minecraftno.handlers.MySQLHandler;
 import no.minecraft.Minecraftno.handlers.SavedObject;
 import no.minecraft.Minecraftno.handlers.data.BanData;
 import no.minecraft.Minecraftno.handlers.data.PlayerData;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.scoreboard.Scoreboard;
@@ -51,9 +51,9 @@ public class UserHandler {
         // Loop through all existing teams.
         for (Team team : scoreboard.getTeams()) {
             // Loop through all members of this team.
-            for (OfflinePlayer player : team.getPlayers()) {
+            for (String entry : team.getEntries()) {
                 // Remove the player from this team.
-                team.removePlayer(player);
+                team.removeEntry(entry);
             }
         }
 
@@ -431,13 +431,11 @@ public class UserHandler {
 
         // Get the main scoreboard. We use it for tags.
         Scoreboard scoreboard = this.plugin.getServer().getScoreboardManager().getMainScoreboard();
-
         // Get the player's current team, if any.
-        Team team = scoreboard.getPlayerTeam(player);
-
+        Team team = scoreboard.getEntryTeam(player.getName());
         // Remove the player from the current team.
         if (team != null) {
-            team.removePlayer(player);
+            team.removeEntry(player.getName());
         }
 
         // Do we have a tag to use (ie. do we want to put the player in a group)?
@@ -450,10 +448,13 @@ public class UserHandler {
                 // No. Create it and set the prefix for it.
                 team = scoreboard.registerNewTeam(tag);
                 team.setPrefix(color + "[" + tag + "] ");
+                if (color != null) team.setColor(color);
+            } else {
+                team.setPrefix(color + "[" + tag + "] ");
+                if (color != null) team.setColor(color);
             }
-
             // Add the player to this team.
-            team.addPlayer(player);
+            team.addEntry(player.getName());
         }
     }
 
@@ -478,7 +479,7 @@ public class UserHandler {
             Player player = this.plugin.getServer().getPlayerExact(user.getNick());
 
             if (player != null) {
-                Team team = this.plugin.getServer().getScoreboardManager().getMainScoreboard().getPlayerTeam(player);
+                Team team = this.plugin.getServer().getScoreboardManager().getMainScoreboard().getEntryTeam(player.getName());
 
                 if (team != null) {
                     return team.getPrefix();

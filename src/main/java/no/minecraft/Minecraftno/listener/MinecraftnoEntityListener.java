@@ -7,6 +7,7 @@ import no.minecraft.Minecraftno.conf.ConfigurationWorld;
 import no.minecraft.Minecraftno.handlers.GroupHandler;
 import no.minecraft.Minecraftno.handlers.blocks.BlockHandler;
 import no.minecraft.Minecraftno.handlers.blocks.BlockInfoHandler;
+import no.minecraft.Minecraftno.handlers.enums.MinecraftnoLog;
 import no.minecraft.Minecraftno.handlers.player.UserHandler;
 import org.bukkit.*;
 import org.bukkit.World.Environment;
@@ -18,9 +19,11 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionData;
 
@@ -449,13 +452,28 @@ public class MinecraftnoEntityListener implements Listener {
     public void onEntityShootBow(EntityShootBowEvent event) {
         if (event.getEntity() instanceof Player) {
             Player player = (Player) event.getEntity();
+        }
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onEntityPickupItem(EntityPickupItemEvent event) {
+        if (event.getEntity() instanceof Player) {
             ConfigurationServer cfg = this.plugin.getGlobalConfiguration();
-            ConfigurationWorld wcfg = cfg.get(player.getWorld());
-            if (!wcfg.itemDurability) {
-                if (cfg.noDamageTools.contains(event.getBow().getType())) {
-                    if (event.getBow().getDurability() >= 20) {
-                        event.getBow().setDurability((short) -200);
-                    }
+            Player player = (Player) event.getEntity();
+            int access = this.userHandler.getAccess(player);
+            if (access == 0) {
+                event.setCancelled(true);
+                return;
+            } else if (this.userHandler.getInvisible(player)) {
+                event.setCancelled(true);
+                return;
+            } else if (cfg.illegalItems.contains(event.getItem().getItemStack().getType())) {
+                if (access <= 2) {
+                    player.sendMessage(Minecraftno.notAllowedItemMessage());
+                    event.getItem().remove();
+                    this.plugin.getLogHandler().log(this.userHandler.getUserId(player), 0, 0, event.getItem().getItemStack().getType().name(), player.getLocation().toString(), MinecraftnoLog.ILLEGAL);
+                    event.setCancelled(true);
+                    return;
                 }
             }
         }

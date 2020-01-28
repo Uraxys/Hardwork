@@ -19,7 +19,7 @@ public class SetPassengerCommand extends MinecraftnoCommand {
         if (args.length > 0) {
             Player target = this.plugin.playerMatch(args[0]);
             if (target != null) {
-                target.setPassenger(player);
+                target.addPassenger(player);
             }
             return true;
         } else {

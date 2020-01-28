@@ -231,7 +231,7 @@ public class MinecraftnoBlockListener implements Listener {
                         String owner = this.blockinfoHandler.getOwner(block);
                         if (owner != null) {
                             player.sendMessage(ChatColor.RED + owner + " eier flammen over så derfor er blokken beskyttet.");
-                            player.sendBlockChange(block.getLocation(), block.getType(), block.getData());
+                            player.sendBlockChange(block.getLocation(), block.getType().createBlockData());
                             event.setCancelled(true);
                             return;
                         } else {
@@ -246,7 +246,8 @@ public class MinecraftnoBlockListener implements Listener {
                         event.setCancelled(true);
                         return;
                     }
-                } else if (block.getType() == Material.ICE && !player.getItemInHand().getEnchantments().containsKey(Enchantment.SILK_TOUCH)) {
+                } else if (block.getType() == Material.ICE && !player.getInventory().getItemInMainHand().getEnchantments().containsKey(Enchantment.SILK_TOUCH)) {
+                    // Only checking the main hand as that's the only hand that can be used to break blocks.
                     // prevent users from mining ice blocks without silk touch. This prevents water when breaking a block!
                     player.sendMessage(ChatColor.RED + "Denne blokken kan kun fjernes med silk touch.");
                     event.setCancelled(true);
@@ -324,7 +325,6 @@ public class MinecraftnoBlockListener implements Listener {
         }
     }
 
-    @SuppressWarnings({ "deprecation" })
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
         ConfigurationServer cfg = this.plugin.getGlobalConfiguration();
@@ -340,7 +340,7 @@ public class MinecraftnoBlockListener implements Listener {
             return;
         } else if (cfg.illegalItems.contains(event.getBlockPlaced().getType())) {
             if (access < 3) {
-                player.getInventory().remove(player.getItemInHand());
+                player.getInventory().remove(event.getItemInHand()); // Get the item from the hand that was used to place the block.
                 this.plugin.getLogHandler().log(this.userHandler.getUserId(player), 0, 0, event.getBlockPlaced().getType().name(), player.getLocation().toString(), MinecraftnoLog.ILLEGAL);
                 event.setBuild(false);
                 event.setCancelled(true);
@@ -415,7 +415,7 @@ public class MinecraftnoBlockListener implements Listener {
                 String owner = this.blockinfoHandler.getOwner(block);
                 if (owner != null) {
                     player.sendMessage(ChatColor.RED + owner + " eier blokken under så derfor er flammen beskyttet.");
-                    player.sendBlockChange(block.getLocation(), Material.FIRE, new ItemStack(Material.FIRE, 1).getData().getData());
+                    player.sendBlockChange(block.getLocation(), Material.FIRE.createBlockData());
                     event.setCancelled(true);
                     return;
                 } else {
@@ -720,7 +720,8 @@ public class MinecraftnoBlockListener implements Listener {
                 block.setType(Material.AIR);
                 truefalse = true;*/
             } else if (block.getType() == Material.GLOWSTONE) {
-                if (!player.getItemInHand().getEnchantments().containsKey(Enchantment.SILK_TOUCH)) {
+                if (!player.getInventory().getItemInMainHand().getEnchantments().containsKey(Enchantment.SILK_TOUCH)) {
+                    // Only checking the main hand as that's the only hand that can be used to break blocks.
                     Location loc = block.getLocation();
                     block.getWorld().dropItemNaturally(loc, new ItemStack(Material.GLOWSTONE, 1));
                     block.setType(Material.AIR);

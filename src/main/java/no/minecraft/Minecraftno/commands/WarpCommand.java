@@ -42,7 +42,7 @@ public class WarpCommand extends MinecraftnoCommand {
                             veh.teleport(wd.getLocation());
 
                             // Place player "in vehicle" again.
-                            veh.setPassenger(player);
+                            veh.addPassenger(player);
                         } else {
                             player.teleport(wd.getLocation());
                         }

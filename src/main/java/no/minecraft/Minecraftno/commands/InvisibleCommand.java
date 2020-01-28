@@ -21,7 +21,7 @@ public class InvisibleCommand extends MinecraftnoCommand {
             if (args[0].equalsIgnoreCase("on")) {
                 if (!this.userHandler.getInvisible(player)) {
                     for (Player target : this.plugin.getServer().getOnlinePlayers()) {
-                        target.hidePlayer(player);
+                        target.hidePlayer(plugin, player);
                     }
                     player.performCommand("dynmap hide");
                     player.sendMessage(getOkChatColor() + " Du er nå usynlig for andre brukere.");
@@ -32,7 +32,7 @@ public class InvisibleCommand extends MinecraftnoCommand {
             } else if (args[0].equalsIgnoreCase("off")) {
                 if (this.userHandler.getInvisible(player)) {
                     for (Player target : this.plugin.getServer().getOnlinePlayers()) {
-                        target.showPlayer(player);
+                        target.showPlayer(plugin, player);
                     }
                     player.performCommand("dynmap show");
                     player.sendMessage(getOkChatColor() + " Du er nå synlig igjen.");
