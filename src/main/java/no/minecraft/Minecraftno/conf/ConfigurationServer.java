@@ -98,7 +98,6 @@ public class ConfigurationServer {
     public List<Material> illegalItems = new ArrayList<>();
     private final Set<Material> defaultIllegalItems = new HashSet<Material>() {{
         add(Material.BEDROCK);
-        add(Material.SPONGE);
         add(Material.TNT);
         add(Material.FIRE);
         add(Material.SPAWNER);

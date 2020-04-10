@@ -338,15 +338,27 @@ public class MinecraftnoBlockListener implements Listener {
             event.setBuild(false);
             event.setCancelled(true);
             return;
-        } else if (cfg.illegalItems.contains(event.getBlockPlaced().getType())) {
-            if (access < 3) {
-                player.getInventory().remove(event.getItemInHand()); // Get the item from the hand that was used to place the block.
-                this.plugin.getLogHandler().log(this.userHandler.getUserId(player), 0, 0, event.getBlockPlaced().getType().name(), player.getLocation().toString(), MinecraftnoLog.ILLEGAL);
-                event.setBuild(false);
-                event.setCancelled(true);
-                return;
+        }
+
+        if (block.getType() == Material.SPONGE && access >= 2 && !player.isSneaking()) {
+            for (String logg : this.blockinfoHandler.getBlockLog(block, true)) {
+                player.sendMessage(logg);
             }
-        } else if (event.getBlockReplacedState().getType() == Material.FIRE) {
+            player.sendMessage("------------------ SLUTT -------------------");
+            event.setBuild(false);
+            event.setCancelled(true);
+            return;
+        }
+
+        if (cfg.illegalItems.contains(event.getBlockPlaced().getType()) && access < 3) {
+            player.getInventory().remove(event.getItemInHand()); // Get the item from the hand that was used to place the block.
+            this.plugin.getLogHandler().log(this.userHandler.getUserId(player), 0, 0, event.getBlockPlaced().getType().name(), player.getLocation().toString(), MinecraftnoLog.ILLEGAL);
+            event.setBuild(false);
+            event.setCancelled(true);
+            return;
+        }
+
+        if (event.getBlockReplacedState().getType() == Material.FIRE) {
             int ownerId = this.blockinfoHandler.getOwnerId(block);
             if ((ownerId != 0) && (ownerId != this.userHandler.getUserId(player))) {
                 event.setCancelled(true);
@@ -381,14 +393,6 @@ public class MinecraftnoBlockListener implements Listener {
                     }
                 }
             }
-        } else if (block.getType() == Material.SPONGE && this.userHandler.getAccess(player) >= 2) {
-            for (String logg : this.blockinfoHandler.getBlockLog(block, true)) {
-                player.sendMessage(logg);
-            }
-            player.sendMessage("------------------ SLUTT -------------------");
-            event.setBuild(false);
-            event.setCancelled(true);
-            return;
         } else if (event.getBlockReplacedState().getType().name().endsWith("_SLAB")) {
             Block getBlock = event.getBlockReplacedState().getBlock();
             int ownerId = this.blockinfoHandler.getOwnerId(getBlock);
